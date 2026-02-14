@@ -20,15 +20,15 @@ npm run preview
 
 Place these files in `public/` so they are served from site root:
 
-- `public/gics_watchlist_scorecard_profile_en.json`
-- `public/locale_es.json`
+- `public/data/gics_watchlist_scorecard_profile_en.json`
+- `public/data/locale_es.json`
 
 The app fetches at runtime:
 
-- `/gics_watchlist_scorecard_profile_en.json`
-- `/locale_es.json` (only when switching language to ES)
+- `/data/gics_watchlist_scorecard_profile_en.json`
+- `/data/locale_es.json` (only when switching language to ES)
 
-Do not place them under `/data`.
+Store both JSON files under `public/data/`.
 
 ## Features
 
@@ -44,6 +44,8 @@ Do not place them under `/data`.
 
 ```bash
 npm run test
+# o sin warnings de npm_config_http_proxy:
+npm run test:vitest:coverage
 ```
 
 This runs Vitest in coverage mode (`vitest run --coverage`).
