@@ -15,7 +15,7 @@ export function Navbar({ granularity, onGranularityChange, searchText, onSearchT
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
       <div className="container-fluid gap-2">
         <span className="navbar-brand mb-0 h1">{t('ui.app.title', 'GICS Encyclopedia')}</span>
-        <div className="d-flex gap-2 align-items-center ms-auto">
+        <div className="d-flex flex-wrap gap-2 align-items-center ms-lg-auto w-100" style={{ maxWidth: 680 }}>
           <select
             className="form-select form-select-sm"
             value={lang}
@@ -29,6 +29,7 @@ export function Navbar({ granularity, onGranularityChange, searchText, onSearchT
             className="form-select form-select-sm"
             value={granularity}
             onChange={(e) => onGranularityChange(e.target.value as GicsLevel)}
+            style={{ flex: '1 1 180px', minWidth: 160 }}
           >
             <option value="sector">{t('ui.granularity.sector', 'Sector')}</option>
             <option value="industry_group">{t('ui.granularity.industry_group', 'Industry Group')}</option>
@@ -37,7 +38,7 @@ export function Navbar({ granularity, onGranularityChange, searchText, onSearchT
           </select>
           <input
             className="form-control form-control-sm"
-            style={{ width: 280 }}
+            style={{ flex: '1 1 260px', minWidth: 160 }}
             value={searchText}
             onChange={(e) => onSearchTextChange(e.target.value)}
             placeholder={t('ui.search.placeholder', 'Search by code or name')}
