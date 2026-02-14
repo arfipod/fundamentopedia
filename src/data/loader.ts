@@ -3,7 +3,7 @@ import type { LocaleMap, ProfileRoot } from '../types';
 let localeEsCache: LocaleMap | null = null;
 
 export async function loadProfile(): Promise<ProfileRoot> {
-  const response = await fetch('/gics_watchlist_scorecard_profile_en.json');
+  const response = await fetch('/data/gics_watchlist_scorecard_profile_en.json');
   if (!response.ok) {
     throw new Error(`Failed to load profile: ${response.status}`);
   }
@@ -15,7 +15,7 @@ export async function loadLocaleEs(): Promise<LocaleMap> {
     return localeEsCache;
   }
 
-  const response = await fetch('/locale_es.json');
+  const response = await fetch('/data/locale_es.json');
   if (!response.ok) {
     throw new Error(`Failed to load Spanish locale: ${response.status}`);
   }

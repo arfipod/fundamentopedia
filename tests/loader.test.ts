@@ -10,7 +10,7 @@ describe('loader', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ schema_version: '1' }) }));
     const data = await loadProfile();
     expect(data.schema_version).toBe('1');
-    expect(fetch).toHaveBeenCalledWith('/gics_watchlist_scorecard_profile_en.json');
+    expect(fetch).toHaveBeenCalledWith('/data/gics_watchlist_scorecard_profile_en.json');
   });
 
   it('loads locale and caches results', async () => {

@@ -7,12 +7,12 @@ It lets you choose **granularity** (Sector → Industry Group → Industry → S
 
 Put these files **in the Vite `public/` folder** so they are accessible at the site root:
 
-- `public/gics_watchlist_scorecard_profile_en.json`
-- `public/locale_es.json`
+- `public/data/gics_watchlist_scorecard_profile_en.json`
+- `public/data/locale_es.json`
 
 They will be fetched at runtime as:
-- `GET /gics_watchlist_scorecard_profile_en.json`
-- `GET /locale_es.json` (only when language = ES)
+- `GET /data/gics_watchlist_scorecard_profile_en.json`
+- `GET /data/locale_es.json` (only when language = ES)
 
 > Keeping the canonical dataset in English avoids data duplication.
 > Spanish is loaded via `locale_es.json` using stable translation keys (1:1 by ID/code).
@@ -74,3 +74,9 @@ Typical extensions:
 
 See `src/types.ts` for the TypeScript interfaces that match the provided JSON profile structure
 (`gics_profile_index`, `gics_tree`, `metric_library`, `scorecard_config`, `scoring_rules`, etc.).
+
+
+## Troubleshooting
+
+If your environment injects `npm_config_http_proxy` / `npm_config_https_proxy`, npm may print warnings.
+Use `npm run test:vitest` or `npm run test:vitest:coverage`, which run Vitest via `scripts/run-vitest.sh` after unsetting those vars.
