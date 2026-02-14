@@ -18,17 +18,12 @@ npm run preview
 
 ## Data files (important)
 
-Place these files in `public/` so they are served from site root:
+Place these files in `public/` so they are served at the site root:
 
-- `public/data/gics_watchlist_scorecard_profile_en.json`
-- `public/data/locale_es.json`
+- `public/gics_watchlist_scorecard_profile_en.json` → `GET /gics_watchlist_scorecard_profile_en.json`
+- `public/locale_es.json` → `GET /locale_es.json` (only when ES)
 
-The app fetches at runtime:
-
-- `/data/gics_watchlist_scorecard_profile_en.json`
-- `/data/locale_es.json` (only when switching language to ES)
-
-Store both JSON files under `public/data/`.
+Note: `/data/...` is still supported as a fallback for backwards compatibility.
 
 ## Features
 

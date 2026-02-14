@@ -2,12 +2,26 @@ import type { LocaleMap, ProfileRoot } from '../types';
 
 let localeEsCache: LocaleMap | null = null;
 
-export async function loadProfile(): Promise<ProfileRoot> {
-  const response = await fetch('/data/gics_watchlist_scorecard_profile_en.json');
-  if (!response.ok) {
-    throw new Error(`Failed to load profile: ${response.status}`);
+async function fetchJson<T>(urls: string[]): Promise<T> {
+  let lastError: unknown = null;
+
+  for (const url of urls) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} for ${url}`);
+      }
+      return (await response.json()) as T;
+    } catch (error) {
+      lastError = error;
+    }
   }
-  return (await response.json()) as ProfileRoot;
+
+  throw lastError instanceof Error ? lastError : new Error('Failed to fetch JSON');
+}
+
+export async function loadProfile(): Promise<ProfileRoot> {
+  return fetchJson<ProfileRoot>(['/gics_watchlist_scorecard_profile_en.json', '/data/gics_watchlist_scorecard_profile_en.json']);
 }
 
 export async function loadLocaleEs(): Promise<LocaleMap> {
@@ -15,11 +29,7 @@ export async function loadLocaleEs(): Promise<LocaleMap> {
     return localeEsCache;
   }
 
-  const response = await fetch('/data/locale_es.json');
-  if (!response.ok) {
-    throw new Error(`Failed to load Spanish locale: ${response.status}`);
-  }
+  localeEsCache = await fetchJson<LocaleMap>(['/locale_es.json', '/data/locale_es.json']);
 
-  localeEsCache = (await response.json()) as LocaleMap;
   return localeEsCache;
 }
