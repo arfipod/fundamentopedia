@@ -1,26 +1,44 @@
+/**
+ * Application type definitions for the GICS Encyclopedia.
+ *
+ * These types model the gics_watchlist_scorecard_profile_en.json dataset.
+ * See also: /types.ts (root) for the full reference schema with additional
+ * types used by data-generation tooling.
+ */
+
 export type GicsLevel = 'sector' | 'industry_group' | 'industry' | 'sub_industry';
 export type MetricCategory = 'core' | 'secondary' | 'risk';
 
+/** Matches `metric_library[metric_id].statement` */
+export type FinancialStatement = 'income' | 'balance' | 'cashflow' | 'derived' | 'operational' | 'var';
+
 export interface MetricLibraryEntry {
+  /** Display label (EN in canonical file; key kept as `label_es` for legacy compat). */
   label_es: string;
-  statement: string;
+  statement: FinancialStatement;
+  /** Optional formula / explanation string. */
   formula?: string;
+  /** Why this metric matters. */
   why: string;
+  /** Common pitfalls / what to watch for. */
   watch_for?: string;
 }
 
 export interface MetricPriority {
-  priority: number;
+  priority: number; // 1..N
   category: MetricCategory;
 }
 
+/** metric_id -> priority/category */
 export type MetricPriorityMap = Record<string, MetricPriority>;
+/** bucket_id -> weight (0..1) */
 export type BucketWeightMap = Record<string, number>;
+/** metric_id -> weight (0..1) */
 export type MetricWeightMap = Record<string, number>;
 
 export interface ThresholdRuleBase {
   type: 'higher_better' | 'lower_better' | 'target_range' | 'informational';
-  unit: string;
+  unit: string; // e.g. "percent", "turns", "ratio"
   note?: string;
 }
 
@@ -53,6 +71,7 @@ export interface InformationalRule extends ThresholdRuleBase {
 }
 
 export type ScoringRule = HigherBetterRule | LowerBetterRule | TargetRangeRule | InformationalRule;
+/** metric_id -> scoring rule */
 export type ScoringRuleMap = Record<string, ScoringRule>;
 export type ThresholdOverride = ScoringRule;
 export type ThresholdOverrideMap = Record<string, ThresholdOverride>;
@@ -66,8 +85,11 @@ export interface ScorecardBucket {
 export interface ScorecardConfig {
   buckets: ScorecardBucket[];
   bucket_weights_default: BucketWeightMap;
+  /** template_id -> bucket weights */
   bucket_weights_by_template: Record<string, BucketWeightMap>;
+  /** metric_id -> bucket_id */
   metric_bucket_map: Record<string, string>;
+  /** template_id -> (metric_id -> override rule) */
   threshold_overrides_by_template: Record<string, ThresholdOverrideMap>;
   aggregation: {
     bucket_score_method: string;
@@ -76,6 +98,7 @@ export interface ScorecardConfig {
   };
 }
 
+/** Templates define recommended metric sets by model/industry. */
 export interface TemplateEntry {
   core: string[];
   secondary: string[];
@@ -91,9 +114,11 @@ export interface GicsProfileIndexNode {
   metric_priorities: MetricPriorityMap;
   metric_weights: MetricWeightMap;
   metric_weights_bucketed: MetricWeightMap;
+  /** Metrics excluded from scoring, shown as informational only. */
   informational_metrics: string[];
   bucket_weights: BucketWeightMap;
   bucket_metric_weights: Record<string, unknown>;
+  /** Present only for some sub-industries. */
   threshold_overrides?: ThresholdOverrideMap;
 }
 
@@ -122,6 +147,7 @@ export interface GicsTreeNode {
   applies_templates?: string[];
   overrides?: TreeOverrides;
   watchlist?: TreeWatchlist;
+  /** In gics_tree the priorities are stored under kpi_priorities. */
   kpi_priorities?: MetricPriorityMap;
   scoring?: TreeScoring;
   children?: GicsTreeNode[];

@@ -7,12 +7,14 @@ It lets you choose **granularity** (Sector → Industry Group → Industry → S
 
 Put these files **in the Vite `public/` folder** so they are accessible at the site root:
 
-- `public/data/gics_watchlist_scorecard_profile_en.json`
-- `public/data/locale_es.json`
+- `public/gics_watchlist_scorecard_profile_en.json`
+- `public/locale_es.json`
 
 They will be fetched at runtime as:
-- `GET /data/gics_watchlist_scorecard_profile_en.json`
-- `GET /data/locale_es.json` (only when language = ES)
+- `GET /gics_watchlist_scorecard_profile_en.json`
+- `GET /locale_es.json` (only when language = ES)
+
+> **Fallback:** The loader also tries `/data/...` paths as a fallback for backwards compatibility.
 
 > Keeping the canonical dataset in English avoids data duplication.
 > Spanish is loaded via `locale_es.json` using stable translation keys (1:1 by ID/code).
@@ -53,13 +55,13 @@ The app uses a tiny dictionary-based i18n:
 - EN is the canonical dataset strings.
 - ES uses `locale_es.json` keys like:
 
-- `gics.name.<code>`
-- `bucket.label.<bucket_id>`, `bucket.desc.<bucket_id>`
-- `template.notes.<template_id>`
-- `metric.label.<metric_id>`, `metric.why.<metric_id>`, `metric.watch_for.<metric_id>`
-- `scoring.note.<metric_id>`
-- `override.note.<code>.<metric_id>`
-- plus some `ui.*` labels for the interface
+- `gics.name.<code>` — node display names
+- `bucket.label.<bucket_id>`, `bucket.desc.<bucket_id>` — bucket labels/descriptions
+- `template.notes.<template_id>` — template descriptions
+- `metric.label.<metric_id>`, `metric.why.<metric_id>`, `metric.watch_for.<metric_id>` — metric details
+- `scoring.note.<metric_id>` — scoring rule notes
+- `override.note.<code>.<metric_id>` — threshold override notes
+- `ui.*` — interface labels (tabs, column headers, buttons, navigation, etc.)
 
 If a translation key is missing, the UI falls back to the canonical English strings.
 

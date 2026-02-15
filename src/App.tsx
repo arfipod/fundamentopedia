@@ -35,7 +35,7 @@ function persistSelectedCode(code: string | null) {
 }
 
 export default function App() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [profile, setProfile] = useState<ProfileRoot | null>(null);
   const [indexes, setIndexes] = useState<IndexedData | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
@@ -141,7 +141,7 @@ export default function App() {
             />
             <div className="mb-2 d-grid">
               <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedCode(null)}>
-                {lang === 'es' ? 'Ver métricas generales (sin GICS)' : 'View general metrics (no GICS)'}
+                {t('ui.actions.view_general', 'View general metrics (no GICS)')}
               </button>
             </div>
             {isPortrait ? (
@@ -153,8 +153,8 @@ export default function App() {
                   aria-expanded={!isTreeCollapsed}
                 >
                   {isTreeCollapsed
-                    ? (lang === 'es' ? 'Mostrar árbol de industrias' : 'Show industry tree')
-                    : (lang === 'es' ? 'Ocultar árbol de industrias' : 'Hide industry tree')}
+                    ? t('ui.nav.show_tree', 'Show industry tree')
+                    : t('ui.nav.hide_tree', 'Hide industry tree')}
                 </button>
               </div>
             ) : null}

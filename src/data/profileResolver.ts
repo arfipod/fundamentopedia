@@ -7,6 +7,7 @@ import type {
   MetricWeightMap,
   ProfileRoot,
   ResolvedGicsProfile,
+  ThresholdOverrideMap,
   TreeWatchlist,
 } from '../types';
 import { migrateAndResolveGicsCode } from './gicsCodeMigration';
@@ -27,7 +28,14 @@ interface ResolvedState {
   watchlist: TreeWatchlist;
 }
 
-function buildTreeIndexes(profile: ProfileRoot): TreeIndexes {
+let cachedProfile: ProfileRoot | null = null;
+let cachedTreeIndexes: TreeIndexes | null = null;
+
+function getTreeIndexes(profile: ProfileRoot): TreeIndexes {
+  if (cachedProfile === profile && cachedTreeIndexes) {
+    return cachedTreeIndexes;
+  }
+
   const nodeByCode = new Map<string, GicsTreeNode>();
   const pathByCode = new Map<string, string[]>();
 
@@ -43,7 +51,9 @@ function buildTreeIndexes(profile: ProfileRoot): TreeIndexes {
   };
 
   walk(profile.gics_tree, []);
-  return { nodeByCode, pathByCode };
+  cachedProfile = profile;
+  cachedTreeIndexes = { nodeByCode, pathByCode };
+  return cachedTreeIndexes;
 }
 
 function toWatchlistFromPriorities(metricPriorities: MetricPriorityMap): TreeWatchlist {
@@ -196,6 +206,20 @@ function fromIndex(code: string, indexNode: GicsProfileIndexNode): ResolvedGicsP
   };
 }
 
+function collectThresholdOverrides(profile: ProfileRoot, templates: string[], node: GicsTreeNode): ThresholdOverrideMap | undefined {
+  const merged: ThresholdOverrideMap = {};
+  for (const templateId of templates) {
+    const templateOverrides = profile.scorecard_config.threshold_overrides_by_template[templateId];
+    if (templateOverrides) {
+      Object.assign(merged, templateOverrides);
+    }
+  }
+  if (node.scoring?.threshold_overrides) {
+    Object.assign(merged, node.scoring.threshold_overrides);
+  }
+  return Object.keys(merged).length > 0 ? merged : undefined;
+}
+
 function fromTree(profile: ProfileRoot, code: string, indexes: TreeIndexes): ResolvedGicsProfile | null {
   const targetNode = indexes.nodeByCode.get(code);
   const path = indexes.pathByCode.get(code);
@@ -212,6 +236,7 @@ function fromTree(profile: ProfileRoot, code: string, indexes: TreeIndexes): Res
   const watchlist = normalizeWatchlist(resolved.watchlist);
   const kpiPriorities = buildMetricPriorities(watchlist);
   const weights = buildWeights(profile, kpiPriorities, resolved.templates, targetNode);
+  const thresholdOverrides = collectThresholdOverrides(profile, resolved.templates, targetNode);
 
   return {
     code,
@@ -225,11 +250,12 @@ function fromTree(profile: ProfileRoot, code: string, indexes: TreeIndexes): Res
     informational_metrics: weights.informationalMetrics,
     bucketed_weights: weights.bucketedWeights,
     bucket_weights: weights.bucketWeights,
+    threshold_overrides: thresholdOverrides,
   };
 }
 
 export function resolveGicsProfile(profile: ProfileRoot, code: string, options: ResolverOptions = {}): ResolvedGicsProfile | null {
-  const treeIndexes = buildTreeIndexes(profile);
+  const treeIndexes = getTreeIndexes(profile);
   const knownCodes = new Set([...treeIndexes.nodeByCode.keys(), ...Object.keys(profile.gics_profile_index)]);
   const resolvedCode = migrateAndResolveGicsCode(code, knownCodes);
   if (!resolvedCode) return null;
