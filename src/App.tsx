@@ -7,8 +7,10 @@ import { SearchBox } from './ui/SearchBox';
 import { TreeNav } from './ui/TreeNav';
 import { NodeDetail } from './ui/NodeDetail';
 import { resolveGeneralProfile, resolveGicsProfile } from './data/profileResolver';
+import { useI18n } from './i18n/i18n';
 
 export default function App() {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<ProfileRoot | null>(null);
   const [indexes, setIndexes] = useState<IndexedData | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
@@ -76,7 +78,7 @@ export default function App() {
             />
             <div className="mb-2 d-grid">
               <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedCode(null)}>
-                Ver métricas generales (sin GICS)
+                {t('ui.actions.view_general_metrics', 'View general metrics (no GICS)')}
               </button>
             </div>
             <div className="border rounded p-2" style={{ maxHeight: '80vh', overflow: 'auto' }}>

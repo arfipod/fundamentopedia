@@ -916,6 +916,7 @@
   "ui.granularity.industry": "Industria",
   "ui.granularity.sub_industry": "Subindustria",
   "ui.search.placeholder": "Buscar por código o nombre…",
+  "ui.actions.view_general_metrics": "Ver métricas generales (sin GICS)",
   "ui.tabs.core": "Core",
   "ui.tabs.secondary": "Secundarias",
   "ui.tabs.risk": "Riesgo",
