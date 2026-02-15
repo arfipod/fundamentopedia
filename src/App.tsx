@@ -106,6 +106,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      <footer className="text-center text-muted small pb-3">Made with 💙 by arrf</footer>
     </div>
   );
 }
