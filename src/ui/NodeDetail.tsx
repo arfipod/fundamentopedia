@@ -27,7 +27,7 @@ export function NodeDetail({ code, node, profile, breadcrumbCodes }: Props) {
     a.href = url;
     a.download = `${code}.json`;
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   return (

@@ -44,7 +44,7 @@ export function MetricTable({ code, node, profile }: Props) {
         <table className="table table-striped table-sm align-middle">
           <thead>
             <tr>
-              <th>Metric</th><th>Priority</th><th>Category</th><th>Bucket</th><th>Weight</th><th>Statement</th><th>Why</th><th>Watch for</th><th>Scoring</th><th>Override</th>
+              <th>{t('ui.col.metric', 'Metric')}</th><th>{t('ui.col.priority', 'Priority')}</th><th>{t('ui.col.category', 'Category')}</th><th>{t('ui.col.bucket', 'Bucket')}</th><th>{t('ui.col.weight', 'Weight')}</th><th>{t('ui.col.statement', 'Statement')}</th><th>{t('ui.col.why', 'Why')}</th><th>{t('ui.col.watch_for', 'Watch for')}</th><th>{t('ui.col.scoring', 'Scoring')}</th><th>{t('ui.col.override', 'Override')}</th>
             </tr>
           </thead>
           <tbody>

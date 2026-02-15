@@ -1,6 +1,10 @@
 /**
- * Types for gics_watchlist_scorecard_profile_en.json
+ * Full reference types for gics_watchlist_scorecard_profile_en.json
  * (canonical EN dataset; display strings may still be under *_es keys).
+ *
+ * NOTE: The application imports types from src/types.ts, which is the
+ * authoritative set for the running app. This file contains additional
+ * types used by data-generation tooling and as a reference schema.
  *
  * Tip: when fetching JSON, treat it as unknown and (optionally) validate,
  * then cast to ProfileRoot.

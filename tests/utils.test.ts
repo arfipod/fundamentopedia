@@ -16,6 +16,8 @@ describe('utils', () => {
 
   it('scoringRuleToText serializes rule objects', () => {
     expect(scoringRuleToText(undefined)).toBe('—');
+    expect(scoringRuleToText({ type: 'higher_better', unit: 'percent', bull_min: 10 })).toBe('higher_better (percent) — bull_min: 10');
+    expect(scoringRuleToText({ type: 'informational', unit: 'ratio' })).toBe('informational (ratio)');
     expect(scoringRuleToText({ type: 'higher_better', bull_min: 10 })).toContain('bull_min: 10');
   });
 

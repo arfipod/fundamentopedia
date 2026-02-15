@@ -15,11 +15,18 @@ export function categoryBadgeClass(category: MetricCategory): string {
   return 'bg-warning text-dark';
 }
 
+/** Keys shown as the rule header (type + unit), separated from threshold values. */
+const SCORING_META_KEYS = new Set(['type', 'unit', 'note']);
+
 export function scoringRuleToText(rule: Record<string, unknown> | undefined): string {
   if (!rule) return '—';
-  return Object.entries(rule)
+  const type = rule.type ? String(rule.type) : '';
+  const unit = rule.unit ? ` (${String(rule.unit)})` : '';
+  const thresholds = Object.entries(rule)
+    .filter(([k, v]) => !SCORING_META_KEYS.has(k) && v != null)
     .map(([k, v]) => `${k}: ${String(v)}`)
     .join(', ');
+  return thresholds ? `${type}${unit} — ${thresholds}` : `${type}${unit}`;
 }
 
 export function buildNodeMarkdown(args: {
