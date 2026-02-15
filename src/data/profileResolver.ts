@@ -256,3 +256,40 @@ export function resolveGicsProfile(profile: ProfileRoot, code: string, options: 
   }
   return null;
 }
+
+export function resolveGeneralProfile(profile: ProfileRoot): ResolvedGicsProfile | null {
+  const templateId = profile.templates.base_nonfinancial ? 'base_nonfinancial' : null;
+  if (!templateId) return null;
+
+  const template = profile.templates[templateId];
+  const watchlist = normalizeWatchlist({
+    core: [...template.core],
+    risk: [...template.risk],
+    secondary: [...template.secondary],
+  });
+  const kpiPriorities = buildMetricPriorities(watchlist);
+  const weights = buildWeights(
+    profile,
+    kpiPriorities,
+    [templateId],
+    {
+      code: 'general',
+      level: 'sector',
+      name_es: 'General',
+    },
+  );
+
+  return {
+    code: 'general',
+    level: 'sector',
+    name_es: 'General',
+    path: [],
+    templates: [templateId],
+    watchlist,
+    kpi_priorities: kpiPriorities,
+    metric_weights: weights.metricWeights,
+    informational_metrics: weights.informationalMetrics,
+    bucketed_weights: weights.bucketedWeights,
+    bucket_weights: weights.bucketWeights,
+  };
+}

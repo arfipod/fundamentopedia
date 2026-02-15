@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { GicsTreeNode, ProfileRoot, TreeWatchlist } from '../src/types';
-import { resolveGicsProfile } from '../src/data/profileResolver';
+import { resolveGeneralProfile, resolveGicsProfile } from '../src/data/profileResolver';
 
 function loadProfileFixture(): ProfileRoot {
   const filePath = path.resolve(process.cwd(), 'public/data/gics_watchlist_scorecard_profile_en.json');
@@ -34,6 +34,14 @@ function flattenWatchlist(watchlist: TreeWatchlist): string[] {
 
 describe('resolveGicsProfile', () => {
   const profile = loadProfileFixture();
+
+  it('returns top-level general metrics when no GICS is selected', () => {
+    const general = resolveGeneralProfile(profile);
+    expect(general).toBeTruthy();
+    expect(general?.code).toBe('general');
+    expect(general?.templates).toContain('base_nonfinancial');
+    expect((general?.watchlist.core.length ?? 0) + (general?.watchlist.risk.length ?? 0) + (general?.watchlist.secondary.length ?? 0)).toBeGreaterThan(0);
+  });
 
   it('falls back to parent code when exact code is missing', () => {
     const sector = resolveGicsProfile(profile, '10');
