@@ -18,6 +18,8 @@ export default function App() {
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -48,6 +50,19 @@ export default function App() {
     const firstMatchCode = Object.keys(profile.gics_profile_index).find((code) => profile.gics_profile_index[code].level === granularity);
     setSelectedCode(firstMatchCode ?? null);
   }, [granularity, profile, selectedNode]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(orientation: portrait)');
+    const updateOrientation = () => {
+      const portrait = media.matches;
+      setIsPortrait(portrait);
+      setIsTreeCollapsed(portrait);
+    };
+
+    updateOrientation();
+    media.addEventListener('change', updateOrientation);
+    return () => media.removeEventListener('change', updateOrientation);
+  }, []);
 
   if (loading) {
     return <div className="d-flex justify-content-center p-5"><div className="spinner-border" /></div>;
@@ -81,9 +96,25 @@ export default function App() {
                 {lang === 'es' ? 'Ver métricas generales (sin GICS)' : 'View general metrics (no GICS)'}
               </button>
             </div>
-            <div className="border rounded p-2" style={{ maxHeight: '80vh', overflow: 'auto' }}>
-              <TreeNav tree={profile.gics_tree} selectedCode={selectedCode} granularity={granularity} onSelect={setSelectedCode} />
-            </div>
+            {isPortrait ? (
+              <div className="mb-2 d-grid">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setIsTreeCollapsed((prev) => !prev)}
+                  aria-expanded={!isTreeCollapsed}
+                >
+                  {isTreeCollapsed
+                    ? (lang === 'es' ? 'Mostrar árbol de industrias' : 'Show industry tree')
+                    : (lang === 'es' ? 'Ocultar árbol de industrias' : 'Hide industry tree')}
+                </button>
+              </div>
+            ) : null}
+            {!isTreeCollapsed ? (
+              <div className="border rounded p-2" style={{ maxHeight: '80vh', overflow: 'auto' }}>
+                <TreeNav tree={profile.gics_tree} selectedCode={selectedCode} granularity={granularity} onSelect={setSelectedCode} />
+              </div>
+            ) : null}
           </div>
           <div className="col-lg-9">
             {selectedCode && selectedNode ? (
