@@ -9,7 +9,7 @@ import type {
   ResolvedGicsProfile,
   TreeWatchlist,
 } from '../types';
-import { migrateAndResolveGicsCode } from './gicsCodeMigration';
+import { resolveGicsCode } from './gicsCodeResolver';
 
 const CATEGORY_ORDER: MetricCategory[] = ['core', 'risk', 'secondary'];
 
@@ -231,7 +231,7 @@ function fromTree(profile: ProfileRoot, code: string, indexes: TreeIndexes): Res
 export function resolveGicsProfile(profile: ProfileRoot, code: string, options: ResolverOptions = {}): ResolvedGicsProfile | null {
   const treeIndexes = buildTreeIndexes(profile);
   const knownCodes = new Set([...treeIndexes.nodeByCode.keys(), ...Object.keys(profile.gics_profile_index)]);
-  const resolvedCode = migrateAndResolveGicsCode(code, knownCodes);
+  const resolvedCode = resolveGicsCode(code, knownCodes);
   if (!resolvedCode) return null;
 
   if (!options.recomputeFromGraph && profile.gics_profile_index[resolvedCode]) {

@@ -8,7 +8,7 @@ import { TreeNav } from './ui/TreeNav';
 import { NodeDetail } from './ui/NodeDetail';
 import { resolveGeneralProfile, resolveGicsProfile } from './data/profileResolver';
 import { useI18n } from './i18n/i18n';
-import { migrateAndResolveGicsCode } from './data/gicsCodeMigration';
+import { resolveGicsCode } from './data/gicsCodeResolver';
 
 const SELECTED_GICS_STORAGE_KEY = 'fundamentopedia.selectedGicsCode';
 
@@ -79,7 +79,7 @@ export default function App() {
       return;
     }
 
-    const resolved = migrateAndResolveGicsCode(persistedCode, knownCodes);
+    const resolved = resolveGicsCode(persistedCode, knownCodes);
     if (resolved) {
       setSelectedCode(resolved);
       persistSelectedCode(resolved);

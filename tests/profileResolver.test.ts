@@ -51,7 +51,7 @@ describe('resolveGicsProfile', () => {
     expect(fallback?.code).toBe('101010');
   });
 
-  it('migrates legacy codes before resolving', () => {
+  it('normalizes alias codes before resolving', () => {
     expect(resolveGicsProfile(profile, '45102020')?.code).toBe('20202030');
     expect(resolveGicsProfile(profile, '20304020')?.code).toBe('20304030');
     expect(resolveGicsProfile(profile, '25502020')?.code).toBe('25503030');
