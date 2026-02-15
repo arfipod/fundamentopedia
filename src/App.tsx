@@ -6,7 +6,7 @@ import { Navbar } from './ui/Navbar';
 import { SearchBox } from './ui/SearchBox';
 import { TreeNav } from './ui/TreeNav';
 import { NodeDetail } from './ui/NodeDetail';
-import { resolveGicsProfile } from './data/profileResolver';
+import { resolveGeneralProfile, resolveGicsProfile } from './data/profileResolver';
 
 export default function App() {
   const [profile, setProfile] = useState<ProfileRoot | null>(null);
@@ -24,8 +24,7 @@ export default function App() {
         const built = buildIndexes(loaded);
         setProfile(loaded);
         setIndexes(built);
-        const firstMatchCode = Object.keys(loaded.gics_profile_index).find((code) => loaded.gics_profile_index[code].level === granularity);
-        setSelectedCode(firstMatchCode ?? null);
+        setSelectedCode(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -40,6 +39,7 @@ export default function App() {
     () => (selectedCode && profile ? resolveGicsProfile(profile, selectedCode) : null),
     [profile, selectedCode],
   );
+  const generalNode = useMemo(() => (profile ? resolveGeneralProfile(profile) : null), [profile]);
 
   useEffect(() => {
     if (!profile || !selectedNode || selectedNode.level === granularity) return;
@@ -74,6 +74,11 @@ export default function App() {
                 setSearchText('');
               }}
             />
+            <div className="mb-2 d-grid">
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedCode(null)}>
+                Ver métricas generales (sin GICS)
+              </button>
+            </div>
             <div className="border rounded p-2" style={{ maxHeight: '80vh', overflow: 'auto' }}>
               <TreeNav tree={profile.gics_tree} selectedCode={selectedCode} granularity={granularity} onSelect={setSelectedCode} />
             </div>
@@ -85,6 +90,13 @@ export default function App() {
                 node={selectedNode}
                 profile={profile}
                 breadcrumbCodes={selectedNode.path}
+              />
+            ) : generalNode ? (
+              <NodeDetail
+                code="general"
+                node={generalNode}
+                profile={profile}
+                breadcrumbCodes={[]}
               />
             ) : (
               <div className="alert alert-info">Select a node from the tree.</div>
