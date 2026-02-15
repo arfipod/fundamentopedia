@@ -89,6 +89,7 @@ export default function App() {
               onSelect={(code) => {
                 setSelectedCode(code);
                 setSearchText('');
+                setIsTreeCollapsed(false);
               }}
             />
             <div className="mb-2 d-grid">
