@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { GicsLevel, GicsTreeNode } from '../types';
 import { useI18n } from '../i18n/i18n';
 
@@ -16,6 +16,40 @@ export function TreeNav({ tree, selectedCode, granularity, onSelect }: Props) {
   const toggle = (code: string) => setOpenCodes((prev: Record<string, boolean>) => ({ ...prev, [code]: !prev[code] }));
 
   const isSelectable = useMemo(() => (level: GicsLevel) => level === granularity, [granularity]);
+
+  const pathToSelected = useMemo(() => {
+    if (!selectedCode) return [];
+
+    const findPath = (nodes: GicsTreeNode[], path: string[] = []): string[] | null => {
+      for (const node of nodes) {
+        const nextPath = [...path, node.code];
+        if (node.code === selectedCode) {
+          return nextPath;
+        }
+
+        const childPath = node.children?.length ? findPath(node.children, nextPath) : null;
+        if (childPath) {
+          return childPath;
+        }
+      }
+
+      return null;
+    };
+
+    return findPath(tree) ?? [];
+  }, [selectedCode, tree]);
+
+  useEffect(() => {
+    if (!pathToSelected.length) return;
+
+    setOpenCodes((prev) => {
+      const next = { ...prev };
+      for (const code of pathToSelected) {
+        next[code] = true;
+      }
+      return next;
+    });
+  }, [pathToSelected]);
 
   const renderNode = (node: GicsTreeNode, depth = 0) => {
     const hasChildren = Boolean(node.children?.length);
