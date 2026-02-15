@@ -97,12 +97,49 @@ export interface GicsProfileIndexNode {
   threshold_overrides?: ThresholdOverrideMap;
 }
 
+export interface TreeWatchlist {
+  core: string[];
+  secondary: string[];
+  risk: string[];
+}
+
+export interface TreeOverrides {
+  add_core?: string[];
+  add_secondary?: string[];
+  add_risk?: string[];
+  remove?: string[];
+}
+
+export interface TreeScoring {
+  informational_metrics?: string[];
+  threshold_overrides?: ThresholdOverrideMap;
+}
+
 export interface GicsTreeNode {
   level: GicsLevel;
   code: string;
   name_es: string;
   applies_templates?: string[];
+  overrides?: TreeOverrides;
+  watchlist?: TreeWatchlist;
+  kpi_priorities?: MetricPriorityMap;
+  scoring?: TreeScoring;
   children?: GicsTreeNode[];
+}
+
+export interface ResolvedGicsProfile {
+  code: string;
+  level: GicsLevel;
+  name_es: string;
+  path: string[];
+  templates: string[];
+  watchlist: TreeWatchlist;
+  kpi_priorities: MetricPriorityMap;
+  metric_weights: MetricWeightMap;
+  informational_metrics: string[];
+  bucketed_weights: MetricWeightMap;
+  bucket_weights: BucketWeightMap;
+  threshold_overrides?: ThresholdOverrideMap;
 }
 
 export interface ProfileRoot {
@@ -113,6 +150,7 @@ export interface ProfileRoot {
   templates: Record<string, TemplateEntry>;
   gics_tree: GicsTreeNode[];
   scoring_rules: ScoringRuleMap;
+  weight_by_priority_default?: Record<string, number>;
   gics_profile_index: Record<string, GicsProfileIndexNode>;
   scorecard_config: ScorecardConfig;
 }

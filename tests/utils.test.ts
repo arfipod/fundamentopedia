@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildNodeMarkdown, categoryBadgeClass, formatPct, scoringRuleToText } from '../src/ui/utils';
-import type { GicsProfileIndexNode, ProfileRoot } from '../src/types';
+import type { ProfileRoot, ResolvedGicsProfile } from '../src/types';
 
 describe('utils', () => {
   it('formatPct formats numeric values', () => {
@@ -20,17 +20,18 @@ describe('utils', () => {
   });
 
   it('buildNodeMarkdown produces markdown table content', () => {
-    const node: GicsProfileIndexNode = {
+    const node: ResolvedGicsProfile = {
+      code: '1010',
       level: 'industry',
       name_es: 'Test Industry',
-      path_es: ['Energy', 'Test Industry'],
-      applies_templates: ['base_nonfinancial'],
-      metric_priorities: { m1: { priority: 1, category: 'core' } },
+      path: ['Energy', 'Test Industry'],
+      templates: ['base_nonfinancial'],
+      watchlist: { core: ['m1'], secondary: [], risk: [] },
+      kpi_priorities: { m1: { priority: 1, category: 'core' } },
       metric_weights: { m1: 1 },
-      metric_weights_bucketed: { m1: 0.2 },
+      bucketed_weights: { m1: 0.2 },
       informational_metrics: [],
       bucket_weights: { quality: 0.5 },
-      bucket_metric_weights: {},
     };
 
     const profile = {

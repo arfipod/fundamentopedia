@@ -1,11 +1,11 @@
-import type { GicsProfileIndexNode, ProfileRoot } from '../types';
+import type { ProfileRoot, ResolvedGicsProfile } from '../types';
 import { useI18n } from '../i18n/i18n';
 import { buildNodeMarkdown, formatPct } from './utils';
 import { MetricTable } from './MetricTable';
 
 interface Props {
   code: string;
-  node: GicsProfileIndexNode;
+  node: ResolvedGicsProfile;
   profile: ProfileRoot;
   breadcrumbCodes: string[];
 }
@@ -37,7 +37,7 @@ export function NodeDetail({ code, node, profile, breadcrumbCodes }: Props) {
           <div>
             <h4 className="mb-1">{displayName}</h4>
             <span className="badge text-bg-secondary me-1">{code}</span>
-            <span className="badge text-bg-info">{node.level}</span>
+            <span className="badge text-bg-info">{t(`gics.level.${node.level}`, node.level)}</span>
             <div className="mt-2 text-muted small">{breadcrumbNames.join(' > ')}</div>
           </div>
           <div className="d-flex gap-2">
@@ -52,13 +52,22 @@ export function NodeDetail({ code, node, profile, breadcrumbCodes }: Props) {
 
         <hr />
 
+        <div className="alert alert-light border">
+          <h6 className="mb-1">{t('profile.inheritance.title', 'GICS profile inheritance')}</h6>
+          <div className="small text-muted mb-1">{t('profile.inheritance.subtitle', 'Directed graph inheritance')}</div>
+          <div className="small mb-1">{t('profile.inheritance.description', 'Children inherit defaults and can add, override, or remove metrics.')}</div>
+          <div className="small"><strong>{t('profile.inheritance.rule.dedupe', 'Category dedupe rule: core > risk > secondary.')}</strong></div>
+        </div>
+
+        <hr />
+
         <h5>{t('ui.sections.templates', 'Templates')}</h5>
         <div className="mb-2 d-flex flex-wrap gap-1">
-          {node.applies_templates.map((templateId) => (
+          {node.templates.map((templateId) => (
             <span className="badge text-bg-dark" key={templateId}>{templateId}</span>
           ))}
         </div>
-        {node.applies_templates.map((templateId) => (
+        {node.templates.map((templateId) => (
           <p className="small mb-1" key={`${templateId}-note`}>
             <strong>{templateId}:</strong> {t(`template.notes.${templateId}`, profile.templates[templateId]?.notes ?? '')}
           </p>

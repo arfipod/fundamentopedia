@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import type { GicsProfileIndexNode, ProfileRoot } from '../types';
+import type { ProfileRoot, ResolvedGicsProfile } from '../types';
 import { useI18n } from '../i18n/i18n';
 import { categoryBadgeClass, formatPct, scoringRuleToText } from './utils';
 
 interface Props {
   code: string;
-  node: GicsProfileIndexNode;
+  node: ResolvedGicsProfile;
   profile: ProfileRoot;
 }
 
@@ -17,12 +17,12 @@ export function MetricTable({ code, node, profile }: Props) {
   const { t } = useI18n();
 
   const rows = useMemo(() => {
-    const base = Object.entries(node.metric_priorities)
+    const base = Object.entries(node.kpi_priorities)
       .map(([metricId, priority]) => ({ metricId, priority }))
       .sort((a, b) => a.priority.priority - b.priority.priority || a.metricId.localeCompare(b.metricId));
 
     return base.filter((row) => (activeTab === 'all' ? true : row.priority.category === activeTab));
-  }, [activeTab, node.metric_priorities]);
+  }, [activeTab, node.kpi_priorities]);
 
   return (
     <>
@@ -64,7 +64,7 @@ export function MetricTable({ code, node, profile }: Props) {
                   <td>{priority.priority}</td>
                   <td><span className={`badge ${categoryBadgeClass(priority.category)}`}>{priority.category}</span></td>
                   <td>{t(`bucket.label.${bucketId}`, bucket?.label_es ?? bucketId)}</td>
-                  <td>{formatPct(node.metric_weights_bucketed[metricId])}</td>
+                  <td>{formatPct(node.bucketed_weights[metricId])}</td>
                   <td>{t(`ui.statement.${metric?.statement ?? ''}`, metric?.statement ?? '—')}</td>
                   <td>{t(`metric.why.${metricId}`, metric?.why ?? '')}</td>
                   <td>{t(`metric.watch_for.${metricId}`, metric?.watch_for ?? '')}</td>
