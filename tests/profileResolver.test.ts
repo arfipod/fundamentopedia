@@ -51,6 +51,13 @@ describe('resolveGicsProfile', () => {
     expect(fallback?.code).toBe('101010');
   });
 
+  it('migrates legacy codes before resolving', () => {
+    expect(resolveGicsProfile(profile, '45102020')?.code).toBe('20202030');
+    expect(resolveGicsProfile(profile, '20304020')?.code).toBe('20304030');
+    expect(resolveGicsProfile(profile, '25502020')?.code).toBe('25503030');
+    expect(resolveGicsProfile(profile, '60102010')?.code).toBe('60201010');
+  });
+
   it('validates graph references, dedupe, and recompute parity', () => {
     const metricLibraryIds = new Set(Object.keys(profile.metric_library));
 

@@ -9,6 +9,7 @@ import type {
   ResolvedGicsProfile,
   TreeWatchlist,
 } from '../types';
+import { migrateAndResolveGicsCode } from './gicsCodeMigration';
 
 const CATEGORY_ORDER: MetricCategory[] = ['core', 'risk', 'secondary'];
 
@@ -43,17 +44,6 @@ function buildTreeIndexes(profile: ProfileRoot): TreeIndexes {
 
   walk(profile.gics_tree, []);
   return { nodeByCode, pathByCode };
-}
-
-function closestKnownCode(code: string, knownCodes: Set<string>): string | null {
-  if (knownCodes.has(code)) return code;
-  for (const size of [8, 6, 4, 2]) {
-    if (code.length > size) {
-      const prefix = code.slice(0, size);
-      if (knownCodes.has(prefix)) return prefix;
-    }
-  }
-  return null;
 }
 
 function toWatchlistFromPriorities(metricPriorities: MetricPriorityMap): TreeWatchlist {
@@ -241,7 +231,7 @@ function fromTree(profile: ProfileRoot, code: string, indexes: TreeIndexes): Res
 export function resolveGicsProfile(profile: ProfileRoot, code: string, options: ResolverOptions = {}): ResolvedGicsProfile | null {
   const treeIndexes = buildTreeIndexes(profile);
   const knownCodes = new Set([...treeIndexes.nodeByCode.keys(), ...Object.keys(profile.gics_profile_index)]);
-  const resolvedCode = closestKnownCode(code, knownCodes);
+  const resolvedCode = migrateAndResolveGicsCode(code, knownCodes);
   if (!resolvedCode) return null;
 
   if (!options.recomputeFromGraph && profile.gics_profile_index[resolvedCode]) {

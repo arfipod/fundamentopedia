@@ -8,6 +8,31 @@ import { TreeNav } from './ui/TreeNav';
 import { NodeDetail } from './ui/NodeDetail';
 import { resolveGeneralProfile, resolveGicsProfile } from './data/profileResolver';
 import { useI18n } from './i18n/i18n';
+import { migrateAndResolveGicsCode } from './data/gicsCodeMigration';
+
+const SELECTED_GICS_STORAGE_KEY = 'fundamentopedia.selectedGicsCode';
+
+function loadPersistedCode(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  for (const key of ['gics', 'code', 'gicsCode']) {
+    const value = params.get(key);
+    if (value) return value;
+  }
+
+  return window.localStorage.getItem(SELECTED_GICS_STORAGE_KEY);
+}
+
+function persistSelectedCode(code: string | null) {
+  const url = new URL(window.location.href);
+  if (code) {
+    window.localStorage.setItem(SELECTED_GICS_STORAGE_KEY, code);
+    url.searchParams.set('gics', code);
+  } else {
+    window.localStorage.removeItem(SELECTED_GICS_STORAGE_KEY);
+    url.searchParams.delete('gics');
+  }
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+}
 
 export default function App() {
   const { lang } = useI18n();
@@ -20,6 +45,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
+  const [selectionHydrated, setSelectionHydrated] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -28,7 +54,6 @@ export default function App() {
         const built = buildIndexes(loaded);
         setProfile(loaded);
         setIndexes(built);
-        setSelectedCode(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -44,12 +69,34 @@ export default function App() {
     [profile, selectedCode],
   );
   const generalNode = useMemo(() => (profile ? resolveGeneralProfile(profile) : null), [profile]);
+  const knownCodes = useMemo(() => (profile ? new Set(Object.keys(profile.gics_profile_index)) : null), [profile]);
+
+  useEffect(() => {
+    if (!knownCodes) return;
+    const persistedCode = loadPersistedCode();
+    if (!persistedCode) {
+      setSelectionHydrated(true);
+      return;
+    }
+
+    const resolved = migrateAndResolveGicsCode(persistedCode, knownCodes);
+    if (resolved) {
+      setSelectedCode(resolved);
+      persistSelectedCode(resolved);
+    }
+    setSelectionHydrated(true);
+  }, [knownCodes]);
 
   useEffect(() => {
     if (!profile || !selectedNode || selectedNode.level === granularity) return;
     const firstMatchCode = Object.keys(profile.gics_profile_index).find((code) => profile.gics_profile_index[code].level === granularity);
     setSelectedCode(firstMatchCode ?? null);
   }, [granularity, profile, selectedNode]);
+
+  useEffect(() => {
+    if (!profile || !selectionHydrated) return;
+    persistSelectedCode(selectedCode);
+  }, [profile, selectedCode, selectionHydrated]);
 
   useEffect(() => {
     const media = window.matchMedia('(orientation: portrait)');
