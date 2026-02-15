@@ -75,24 +75,28 @@ export function NodeDetail({ code, node, profile, breadcrumbCodes }: Props) {
 
         <hr />
 
-        <h5>{t('ui.sections.buckets', 'Scorecard Buckets')}</h5>
-        <div className="row">
-          {profile.scorecard_config.buckets.map((bucket) => {
-            const weight = node.bucket_weights[bucket.id] ?? 0;
-            return (
-              <div className="col-md-6 mb-2" key={bucket.id}>
-                <div className="d-flex justify-content-between">
-                  <span>{t(`bucket.label.${bucket.id}`, bucket.label_es)}</span>
-                  <span>{formatPct(weight)}</span>
+        <details className="mb-2">
+          <summary>
+            <h5 className="d-inline">{t('ui.sections.buckets', 'Scorecard Buckets')}</h5>
+          </summary>
+          <div className="row mt-2">
+            {profile.scorecard_config.buckets.map((bucket) => {
+              const weight = node.bucket_weights[bucket.id] ?? 0;
+              return (
+                <div className="col-md-6 mb-2" key={bucket.id}>
+                  <div className="d-flex justify-content-between">
+                    <span>{t(`bucket.label.${bucket.id}`, bucket.label_es)}</span>
+                    <span>{formatPct(weight)}</span>
+                  </div>
+                  <div className="progress" role="progressbar" aria-valuenow={weight * 100} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="progress-bar" style={{ width: `${weight * 100}%` }} />
+                  </div>
+                  <div className="small text-muted">{t(`bucket.desc.${bucket.id}`, bucket.description_es)}</div>
                 </div>
-                <div className="progress" role="progressbar" aria-valuenow={weight * 100} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="progress-bar" style={{ width: `${weight * 100}%` }} />
-                </div>
-                <div className="small text-muted">{t(`bucket.desc.${bucket.id}`, bucket.description_es)}</div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </details>
 
         <hr />
         <h5>{t('ui.sections.metrics', 'Metrics')}</h5>
