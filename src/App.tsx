@@ -6,6 +6,7 @@ import { Navbar } from './ui/Navbar';
 import { SearchBox } from './ui/SearchBox';
 import { TreeNav } from './ui/TreeNav';
 import { NodeDetail } from './ui/NodeDetail';
+import { resolveGicsProfile } from './data/profileResolver';
 
 export default function App() {
   const [profile, setProfile] = useState<ProfileRoot | null>(null);
@@ -36,7 +37,7 @@ export default function App() {
   }, []);
 
   const selectedNode = useMemo(
-    () => (selectedCode && profile ? profile.gics_profile_index[selectedCode] ?? null : null),
+    () => (selectedCode && profile ? resolveGicsProfile(profile, selectedCode) : null),
     [profile, selectedCode],
   );
 
@@ -83,7 +84,7 @@ export default function App() {
                 code={selectedCode}
                 node={selectedNode}
                 profile={profile}
-                breadcrumbCodes={indexes.pathCodesByCode.get(selectedCode) ?? [selectedCode]}
+                breadcrumbCodes={selectedNode.path}
               />
             ) : (
               <div className="alert alert-info">Select a node from the tree.</div>

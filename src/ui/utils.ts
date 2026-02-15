@@ -1,4 +1,4 @@
-import type { GicsProfileIndexNode, MetricCategory, ProfileRoot } from '../types';
+import type { MetricCategory, ProfileRoot, ResolvedGicsProfile } from '../types';
 
 export const LEVEL_ORDER = ['sector', 'industry_group', 'industry', 'sub_industry'] as const;
 
@@ -25,7 +25,7 @@ export function scoringRuleToText(rule: Record<string, unknown> | undefined): st
 export function buildNodeMarkdown(args: {
   code: string;
   name: string;
-  node: GicsProfileIndexNode;
+  node: ResolvedGicsProfile;
   profile: ProfileRoot;
   breadcrumbs: string[];
 }): string {
@@ -35,7 +35,7 @@ export function buildNodeMarkdown(args: {
   lines.push('');
   lines.push(`- Level: ${node.level}`);
   lines.push(`- Breadcrumb: ${breadcrumbs.join(' > ')}`);
-  lines.push(`- Templates: ${node.applies_templates.join(', ') || 'None'}`);
+  lines.push(`- Templates: ${node.templates.join(', ') || 'None'}`);
   lines.push('');
   lines.push('## Buckets');
   lines.push('| Bucket | Weight |');
@@ -48,12 +48,12 @@ export function buildNodeMarkdown(args: {
   lines.push('| Metric | Category | Priority | Bucket | Weight |');
   lines.push('|---|---|---:|---|---:|');
 
-  const metricRows = Object.entries(node.metric_priorities).sort((a, b) => a[1].priority - b[1].priority);
+  const metricRows = Object.entries(node.kpi_priorities).sort((a, b) => a[1].priority - b[1].priority);
   for (const [metricId, mp] of metricRows) {
     const metric = profile.metric_library[metricId];
     const bucket = profile.scorecard_config.metric_bucket_map[metricId] ?? '—';
     lines.push(
-      `| ${metric?.label_es ?? metricId} | ${mp.category} | ${mp.priority} | ${bucket} | ${formatPct(node.metric_weights_bucketed[metricId])} |`,
+      `| ${metric?.label_es ?? metricId} | ${mp.category} | ${mp.priority} | ${bucket} | ${formatPct(node.bucketed_weights[metricId])} |`,
     );
   }
 
