@@ -7,7 +7,7 @@ import type {
   ParsedFinancials,
   ReportSummary,
 } from './types';
-import { findRow, getRowValue } from './parser';
+import { findRow, findRowByMetricKey, getRowValue } from './parser';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -140,11 +140,11 @@ export function analyzeFinancials(parsed: ParsedFinancials): FinancialReport {
   // ========================================
   const profitabilityMetrics: ComputedMetric[] = [];
 
-  const revenueRow = findRow(is, 'total revenues', 'revenues');
-  const grossProfitRow = findRow(is, 'gross profit');
-  const opIncomeRow = findRow(is, 'operating income');
-  const netIncomeRow = findRow(is, 'net income to common incl extra', 'net income');
-  const ebitdaRow = findRow(is, 'ebitda');
+  const revenueRow = findRowByMetricKey(is, 'revenue') ?? findRow(is, 'total revenues', 'revenues');
+  const grossProfitRow = findRowByMetricKey(is, 'grossProfit') ?? findRow(is, 'gross profit');
+  const opIncomeRow = findRowByMetricKey(is, 'operatingIncome') ?? findRow(is, 'operating income');
+  const netIncomeRow = findRowByMetricKey(is, 'netIncome') ?? findRow(is, 'net income to common incl extra', 'net income');
+  const ebitdaRow = findRowByMetricKey(is, 'ebitda') ?? findRow(is, 'ebitda');
 
   if (revenueRow) {
     profitabilityMetrics.push({
