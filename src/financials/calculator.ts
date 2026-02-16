@@ -616,19 +616,19 @@ export function analyzeFinancials(parsed: ParsedFinancials): FinancialReport {
     const valMetrics: ComputedMetric[] = [];
     const valPeriods = valuation.periods;
 
-    const addValMetric = (...patterns: string[]) => {
-      const m = buildMetricFromRow(valuation, valPeriods, patterns[0], 'ratio', patterns[0], ...patterns);
+    const addValMetric = (unit: 'number' | 'percent' | 'ratio' | 'currency', ...patterns: string[]) => {
+      const m = buildMetricFromRow(valuation, valPeriods, patterns[0], unit, patterns[0], ...patterns);
       if (m) valMetrics.push(m);
     };
 
-    addValMetric('NTM P/E', 'ntm price / normalized earnings');
-    addValMetric('NTM EV/EBITDA', 'ntm total enterprise value / ebitda');
-    addValMetric('NTM EV/Revenue', 'ntm total enterprise value / revenues');
-    addValMetric('NTM FCF Yield', 'ntm levered free cash flow yield');
-    addValMetric('LTM P/E', 'ltm price / diluted eps');
-    addValMetric('LTM EV/EBITDA', 'ltm total enterprise value / ebitda');
-    addValMetric('LTM P/B', 'ltm price / book value');
-    addValMetric('LTM Dividend Yield', 'ltm dividend yield');
+    addValMetric('ratio', 'NTM P/E', 'ntm price / normalized earnings');
+    addValMetric('ratio', 'NTM EV/EBITDA', 'ntm total enterprise value / ebitda');
+    addValMetric('ratio', 'NTM EV/Revenue', 'ntm total enterprise value / revenues');
+    addValMetric('percent', 'NTM FCF Yield', 'ntm levered free cash flow yield');
+    addValMetric('ratio', 'LTM P/E', 'ltm price / diluted eps');
+    addValMetric('ratio', 'LTM EV/EBITDA', 'ltm total enterprise value / ebitda');
+    addValMetric('ratio', 'LTM P/B', 'ltm price / book value');
+    addValMetric('percent', 'LTM Dividend Yield', 'ltm dividend yield');
 
     if (valMetrics.length > 0) {
       analysis.push({ title: 'Valuation Multiples', metrics: valMetrics });
