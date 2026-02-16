@@ -68,6 +68,7 @@ function toGrowthRule(metricId: string, rule: ScoringRule): GrowthRule | null {
     kind: inferRuleKind(metricId, rule.unit),
     direction: rule.type === 'lower_better' ? 'lowerIsBetter' : 'higherIsBetter',
     thresholds: thresholdsFromRule(rule),
+    unit: rule.unit,
     notes: rule.note,
   };
 }

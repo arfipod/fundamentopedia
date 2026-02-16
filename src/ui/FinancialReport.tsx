@@ -30,15 +30,21 @@ function cagr(start: number | null | undefined, end: number | null | undefined, 
 
 function computeMetricCagr(metric: ComputedMetric, periods: string[], years: number): number | null {
   const annualPeriods = periods.filter((p) => p !== 'LTM');
-  if (annualPeriods.length <= years) return null;
-  const endPeriod = annualPeriods[annualPeriods.length - 1];
-  const startPeriod = annualPeriods[annualPeriods.length - 1 - years];
-  return cagr(metric.values[startPeriod], metric.values[endPeriod], years);
+  // Find the last annual period with actual data for this metric
+  let endIdx = annualPeriods.length - 1;
+  while (endIdx >= 0 && metric.values[annualPeriods[endIdx]] == null) {
+    endIdx--;
+  }
+  const startIdx = endIdx - years;
+  if (startIdx < 0) return null;
+  return cagr(metric.values[annualPeriods[startIdx]], metric.values[annualPeriods[endIdx]], years);
 }
 
-function formatThreshold(v?: number): string {
+function formatThreshold(v?: number, unit?: string): string {
   if (v === undefined) return '—';
-  return `${(v * 100).toFixed(1)}%`;
+  if (unit === 'percent' || unit === '%' || !unit) return `${(v * 100).toFixed(1)}%`;
+  if (unit === 'turns' || unit === 'ratio') return `${v.toFixed(2)}x`;
+  return v.toFixed(2);
 }
 
 function describeRule(rule: GrowthRule): string {
@@ -48,7 +54,8 @@ function describeRule(rule: GrowthRule): string {
 
   if (!hasThresholds) return `${prefix} (${direction})`;
 
-  return `${prefix}: Bull ${rule.direction === 'lowerIsBetter' ? '<=' : '>='} ${formatThreshold(rule.thresholds?.bull)} · Neutral ${rule.direction === 'lowerIsBetter' ? '<=' : '>='} ${formatThreshold(rule.thresholds?.neutral)} · Bear ${rule.direction === 'lowerIsBetter' ? '>' : '<'} ${formatThreshold(rule.thresholds?.neutral)}`;
+  const u = rule.unit;
+  return `${prefix}: Bull ${rule.direction === 'lowerIsBetter' ? '<=' : '>='} ${formatThreshold(rule.thresholds?.bull, u)} · Neutral ${rule.direction === 'lowerIsBetter' ? '<=' : '>='} ${formatThreshold(rule.thresholds?.neutral, u)} · Bear ${rule.direction === 'lowerIsBetter' ? '>=' : '<='} ${formatThreshold(rule.thresholds?.bear, u)}`;
 }
 
 function evaluateRule(rule: GrowthRule, value: number | null): Signal {

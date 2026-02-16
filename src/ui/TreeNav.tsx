@@ -17,6 +17,23 @@ export function TreeNav({ tree, selectedCode, granularity, onSelect }: Props) {
 
   const isSelectable = useMemo(() => (level: GicsLevel) => level === granularity, [granularity]);
 
+  const parentCodes = useMemo(() => {
+    const codes: string[] = [];
+    const walk = (nodes: GicsTreeNode[]) => {
+      for (const node of nodes) {
+        if (node.children?.length) {
+          codes.push(node.code);
+          walk(node.children);
+        }
+      }
+    };
+    walk(tree);
+    return codes;
+  }, [tree]);
+
+  const expandAll = () => setOpenCodes(Object.fromEntries(parentCodes.map((c) => [c, true])));
+  const collapseAll = () => setOpenCodes({});
+
   const pathToSelected = useMemo(() => {
     if (!selectedCode) return [];
 
@@ -70,7 +87,7 @@ export function TreeNav({ tree, selectedCode, granularity, onSelect }: Props) {
           <button
             type="button"
             disabled={!selectable}
-            className={`btn btn-sm text-start flex-grow-1 ${isActive ? 'btn-primary' : selectable ? 'btn-outline-light border-0' : 'btn-light border-0 text-muted'}`}
+            className={`btn btn-sm text-start flex-grow-1 ${isActive ? 'btn-primary' : selectable ? 'btn-outline-secondary border-0' : 'btn-light border-0 text-muted'}`}
             onClick={() => onSelect(node.code)}
           >
             <span className="badge text-bg-light me-1">{node.code}</span>
@@ -82,5 +99,17 @@ export function TreeNav({ tree, selectedCode, granularity, onSelect }: Props) {
     );
   };
 
-  return <div>{tree.map((node) => renderNode(node))}</div>;
+  return (
+    <div>
+      <div className="d-flex gap-1 mb-2">
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={expandAll}>
+          {t('ui.tree.expand_all', 'Expand all')}
+        </button>
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={collapseAll}>
+          {t('ui.tree.collapse_all', 'Collapse all')}
+        </button>
+      </div>
+      {tree.map((node) => renderNode(node))}
+    </div>
+  );
 }

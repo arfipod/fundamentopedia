@@ -36,6 +36,15 @@ function getAnnualPeriods(periods: string[]): string[] {
   return periods.filter((p) => p !== 'LTM');
 }
 
+/** Find the index of the last annual period where the row has non-null data. */
+function findLastDataIndex(row: { values: Record<string, CellValue> } | undefined, periods: string[]): number {
+  if (!row) return -1;
+  for (let i = periods.length - 1; i >= 0; i--) {
+    if (row.values[periods[i]] != null) return i;
+  }
+  return -1;
+}
+
 /** Get overlapping annual periods across all provided sections. */
 function getCommonPeriods(parsed: ParsedFinancials): string[] {
   const allPeriods = new Set<string>();
@@ -205,9 +214,10 @@ export function analyzeFinancials(parsed: ParsedFinancials): FinancialReport {
   // ========================================
   const growthMetrics: ComputedMetric[] = [];
 
-  if (revenueRow && annualPeriods.length >= 4) {
-    const last = annualPeriods[annualPeriods.length - 1];
-    const threeBack = annualPeriods[annualPeriods.length - 4];
+  const revLastIdx = findLastDataIndex(revenueRow, annualPeriods);
+  if (revenueRow && revLastIdx >= 3) {
+    const last = annualPeriods[revLastIdx];
+    const threeBack = annualPeriods[revLastIdx - 3];
     const cagrVal = cagr(revenueRow.values[threeBack] ?? null, revenueRow.values[last] ?? null, 3);
     if (cagrVal !== null) {
       growthMetrics.push({
@@ -219,9 +229,9 @@ export function analyzeFinancials(parsed: ParsedFinancials): FinancialReport {
     }
   }
 
-  if (revenueRow && annualPeriods.length >= 6) {
-    const last = annualPeriods[annualPeriods.length - 1];
-    const fiveBack = annualPeriods[annualPeriods.length - 6];
+  if (revenueRow && revLastIdx >= 5) {
+    const last = annualPeriods[revLastIdx];
+    const fiveBack = annualPeriods[revLastIdx - 5];
     const cagrVal = cagr(revenueRow.values[fiveBack] ?? null, revenueRow.values[last] ?? null, 5);
     if (cagrVal !== null) {
       growthMetrics.push({
@@ -243,9 +253,10 @@ export function analyzeFinancials(parsed: ParsedFinancials): FinancialReport {
     );
   }
 
-  if (netIncomeRow && annualPeriods.length >= 4) {
-    const last = annualPeriods[annualPeriods.length - 1];
-    const threeBack = annualPeriods[annualPeriods.length - 4];
+  const niLastIdx = findLastDataIndex(netIncomeRow, annualPeriods);
+  if (netIncomeRow && niLastIdx >= 3) {
+    const last = annualPeriods[niLastIdx];
+    const threeBack = annualPeriods[niLastIdx - 3];
     const cagrVal = cagr(netIncomeRow.values[threeBack] ?? null, netIncomeRow.values[last] ?? null, 3);
     if (cagrVal !== null) {
       growthMetrics.push({
@@ -627,9 +638,11 @@ export function analyzeFinancials(parsed: ParsedFinancials): FinancialReport {
   // ========================================
   // Build Summary
   // ========================================
-  const latestPeriod = annualPeriods[annualPeriods.length - 1] ?? '';
-  const prevPeriods3 = annualPeriods.length >= 4 ? annualPeriods[annualPeriods.length - 4] : null;
-  const prevPeriods5 = annualPeriods.length >= 6 ? annualPeriods[annualPeriods.length - 6] : null;
+  // Use the last period with actual revenue data (avoids estimate-only future periods)
+  const summaryRevIdx = findLastDataIndex(revenueRow, annualPeriods);
+  const latestPeriod = summaryRevIdx >= 0 ? annualPeriods[summaryRevIdx] : (annualPeriods[annualPeriods.length - 1] ?? '');
+  const prevPeriods3 = summaryRevIdx >= 3 ? annualPeriods[summaryRevIdx - 3] : null;
+  const prevPeriods5 = summaryRevIdx >= 5 ? annualPeriods[summaryRevIdx - 5] : null;
 
   const revLatest = revenueRow?.values[latestPeriod] ?? null;
   const niLatest = netIncomeRow?.values[latestPeriod] ?? null;
