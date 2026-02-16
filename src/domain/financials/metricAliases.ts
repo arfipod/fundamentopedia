@@ -138,10 +138,10 @@ export const METRIC_ALIASES: Record<MetricKey, string[]> = {
   roe: ['roe', 'return on equity'],
   roa: ['roa', 'return on assets'],
 
-  grossProfitCagr: [],
-  revenueCagr: [],
-  epsCagr: [],
-  fcfCagr: [],
+  grossProfitCagr: ['gross profit cagr', 'gross profit 3y cagr', 'gross profit 5y cagr', 'gross profit 10y cagr'],
+  revenueCagr: ['revenue cagr', 'revenue 3y cagr', 'revenue 5y cagr', 'revenue 10y cagr', 'revenue cagr 3y', 'revenue cagr 5y', 'revenue cagr 10y'],
+  epsCagr: ['eps cagr', 'eps 3y cagr', 'eps 5y cagr', 'eps 10y cagr', 'eps cagr 3y', 'eps cagr 5y', 'eps cagr 10y'],
+  fcfCagr: ['fcf cagr', 'fcf 3y cagr', 'fcf 5y cagr', 'fcf 10y cagr', 'free cash flow cagr', 'free cash flow 3y cagr', 'free cash flow 5y cagr', 'free cash flow 10y cagr'],
 };
 
 const ALIAS_EXACT_LOOKUP = new Map<string, MetricKey>();
@@ -176,6 +176,14 @@ export function matchMetricKeyFromLabel(rawLabel: string): MetricKey | null {
   if (contains('total equity') || contains('shareholders equity') || contains('stockholders equity')) return 'totalEquity';
   if (contains('total debt')) return 'totalDebt';
   if (contains('net debt')) return 'netDebt';
+
+  // CAGR pattern detection
+  if (contains('cagr')) {
+    if (contains('revenue')) return 'revenueCagr';
+    if (contains('gross profit')) return 'grossProfitCagr';
+    if (contains('eps')) return 'epsCagr';
+    if (contains('fcf') || contains('free cash flow')) return 'fcfCagr';
+  }
 
   return null;
 }
