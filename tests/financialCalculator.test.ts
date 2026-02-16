@@ -150,3 +150,46 @@ describe('analyzeFinancials', () => {
     expect(s.revenueCAGR3Y).toBeCloseTo(0.2334, 3);
   });
 });
+
+
+const valuationMd = `# VAL – Value Co
+
+Price: US$50.00 | Extracted: 2026-01-01T00:00:00.000Z
+Period: annual | Sections: 1
+
+---
+
+## Income Statement
+
+| Income Statement | 31/12/23 | 31/12/24 |
+| --- | --- | --- |
+| Revenues | 1.000,00 | 1.100,00 |
+
+## Valuation Multiples
+
+| Valuation Multiples | 31/12/24 | 31/03/25 |
+| --- | --- | --- |
+| NTM Price / Normalized Earnings | 20,00 | 18,00 |
+| NTM Total Enterprise Value / Revenues | 6,00 | 5,50 |
+| NTM Levered Free Cash Flow Yield | 3,00% | 4,00% |
+| LTM Dividend Yield | 1,20% | 1,10% |
+`;
+
+describe('valuation metric units', () => {
+  it('marks yield metrics as percent and keeps multiples as ratio', () => {
+    const parsed = parseFinancialMarkdown(valuationMd);
+    const report = analyzeFinancials(parsed);
+    const valGroup = report.analysis.find((g) => g.title === 'Valuation Multiples');
+
+    const ntmEvRevenue = valGroup?.metrics.find((m) => m.label === 'NTM EV/Revenue');
+    const ntmFcfYield = valGroup?.metrics.find((m) => m.label === 'NTM FCF Yield');
+    const ltmDividendYield = valGroup?.metrics.find((m) => m.label === 'LTM Dividend Yield');
+
+    expect(ntmEvRevenue?.unit).toBe('ratio');
+    expect(ntmFcfYield?.unit).toBe('percent');
+    expect(ltmDividendYield?.unit).toBe('percent');
+
+    expect(ntmFcfYield?.values['31/12/24']).toBeCloseTo(0.03, 5);
+    expect(ltmDividendYield?.values['31/12/24']).toBeCloseTo(0.012, 5);
+  });
+});

@@ -90,6 +90,20 @@ function inferMetricKey(metric: ComputedMetric): MetricKey | null {
 
   const lower = metric.label.toLowerCase();
 
+  // Don't force valuation multiples into non-valuation metrics.
+  if (
+    lower.includes('ev/revenue')
+    || lower.includes('ev / revenue')
+    || lower.includes('ev/ebitda')
+    || lower.includes('ev / ebitda')
+    || lower.includes('p/e')
+    || lower.includes('pe ratio')
+    || lower.includes('price to earnings')
+    || lower.includes('price to book')
+  ) {
+    return null;
+  }
+
   // CAGR pattern detection
   if (lower.includes('cagr')) {
     if (lower.includes('revenue')) return 'revenueCagr';
@@ -99,7 +113,7 @@ function inferMetricKey(metric: ComputedMetric): MetricKey | null {
   }
 
   // Growth and YoY patterns
-  if (lower.includes('revenue yoy') || lower.includes('revenue growth')) return 'revenue';
+  if (lower.includes('revenue yoy') || lower.includes('revenue growth')) return 'revenueGrowthYoy';
   if (lower.includes('net income yoy') || lower.includes('net income growth')) return 'netIncome';
 
   // Margin patterns
