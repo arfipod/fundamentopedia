@@ -24,6 +24,16 @@ describe('resolveEffectiveProfile', () => {
     expect(effective?.metrics.revenue.commentary?.title).toBeTruthy();
   });
 
+
+  it('normalizes percent-based scoring thresholds to decimal values', () => {
+    const effective = resolveEffectiveProfile(profile, '45103010');
+    const grossMarginRule = effective?.metrics.grossMargin.rules?.[0];
+    expect(grossMarginRule?.unit).toBe('percent');
+    expect(grossMarginRule?.thresholds?.bull).toBe(0.4);
+    expect(grossMarginRule?.thresholds?.neutral).toBe(0.2);
+    expect(grossMarginRule?.thresholds?.bear).toBe(0.2);
+  });
+
   it('returns null for unknown gics codes', () => {
     expect(resolveEffectiveProfile(profile, '99999999')).toBeNull();
   });

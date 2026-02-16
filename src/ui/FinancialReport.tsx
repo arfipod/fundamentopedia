@@ -42,7 +42,7 @@ function computeMetricCagr(metric: ComputedMetric, periods: string[], years: num
 
 function formatThreshold(v?: number, unit?: string): string {
   if (v === undefined) return '—';
-  if (unit === 'percent' || unit === '%' || !unit) return `${(v * 100).toFixed(1)}%`;
+  if (unit === 'percent' || unit === '%') return `${(v * 100).toFixed(1)}%`;
   if (unit === 'turns' || unit === 'ratio') return `${v.toFixed(2)}x`;
   return v.toFixed(2);
 }
@@ -286,10 +286,7 @@ function MetricRow({
 
   // Don't show CAGR column for metrics that are already CAGR values
   const isCagrMetric = metricKey !== null && ['revenueCagr', 'grossProfitCagr', 'epsCagr', 'fcfCagr'].includes(metricKey);
-  const shouldShowCagr = !isCagrMetric && (
-    profileMetric?.supports?.cagr === true
-    || (metricKey !== null && ['revenue', 'freeCashFlow', 'netIncome', 'epsBasic', 'epsDiluted', 'grossProfit'].includes(metricKey))
-  );
+  const shouldShowCagr = !isCagrMetric && cagrValue !== null;
 
   // For CAGR metrics, use latest value directly; for other metrics with CAGR rules, compute CAGR
   const ruleInputValue = relevantRule?.kind === 'cagr'
