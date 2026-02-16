@@ -144,7 +144,7 @@ export default function App() {
       />
       <div className="container-fluid py-3">
         {activeView === 'financials' ? (
-          <FinancialAnalysis />
+          <FinancialAnalysis profile={profile} gicsItems={indexes.searchItems} />
         ) : (
           <div className="row">
             <div className="col-lg-3 position-relative">
