@@ -7,6 +7,7 @@ import type {
   SectionKey,
 } from './types';
 import { SECTION_HEADING_MAP } from './types';
+import { matchMetricKeyFromLabel, type MetricKey } from '../domain/financials/metricAliases';
 
 /**
  * Parse a European-formatted number string into a JS number.
@@ -321,6 +322,14 @@ export function findRow(section: FinancialSection | undefined, ...labelPatterns:
     if (row) return row;
   }
   return undefined;
+}
+
+/**
+ * Utility: look up a row by canonical metric key using alias matching.
+ */
+export function findRowByMetricKey(section: FinancialSection | undefined, metricKey: MetricKey): FinancialRow | undefined {
+  if (!section) return undefined;
+  return section.rows.find((row) => matchMetricKeyFromLabel(row.label) === metricKey);
 }
 
 /**
