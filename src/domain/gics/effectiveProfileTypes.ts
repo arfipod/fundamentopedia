@@ -10,6 +10,7 @@ export type GrowthRule = {
     bear?: number;
   };
   direction?: 'higherIsBetter' | 'lowerIsBetter';
+  unit?: string;
   notes?: string;
 };
 

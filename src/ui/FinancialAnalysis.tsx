@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseFinancialMarkdown } from '../financials/parser';
 import { analyzeFinancials } from '../financials/calculator';
 import type { FinancialReport } from '../financials/types';
@@ -22,7 +22,21 @@ export function FinancialAnalysis({ profile, gicsItems }: Props) {
   const [selectedGicsCode, setSelectedGicsCode] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
   const [granularity, setGranularity] = useState<GicsLevel>('industry');
+  const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia('(orientation: portrait)');
+    const update = () => {
+      const portrait = media.matches;
+      setIsPortrait(portrait);
+      setIsTreeCollapsed(portrait);
+    };
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   const selectedGicsProfile = useMemo(
     () => (selectedGicsCode ? resolveGicsProfile(profile, selectedGicsCode) : null),
@@ -155,16 +169,28 @@ export function FinancialAnalysis({ profile, gicsItems }: Props) {
               <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedGicsCode(null)}>
                 Use general profile
               </button>
+              {isPortrait && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setIsTreeCollapsed((prev) => !prev)}
+                  aria-expanded={!isTreeCollapsed}
+                >
+                  {isTreeCollapsed ? 'Show industry tree' : 'Hide industry tree'}
+                </button>
+              )}
             </div>
 
-            <div className="border rounded p-2" style={{ maxHeight: '58vh', overflow: 'auto' }}>
-              <TreeNav
-                tree={profile.gics_tree}
-                selectedCode={selectedGicsCode}
-                granularity={granularity}
-                onSelect={(code) => setSelectedGicsCode(code)}
-              />
-            </div>
+            {!isTreeCollapsed && (
+              <div className="border rounded p-2" style={{ maxHeight: '58vh', overflow: 'auto' }}>
+                <TreeNav
+                  tree={profile.gics_tree}
+                  selectedCode={selectedGicsCode}
+                  granularity={granularity}
+                  onSelect={(code) => setSelectedGicsCode(code)}
+                />
+              </div>
+            )}
 
             <div className="small text-muted mt-3">
               Selected level: <strong>{granularityLabel[granularity]}</strong>
