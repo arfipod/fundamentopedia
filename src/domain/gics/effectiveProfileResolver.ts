@@ -54,6 +54,26 @@ function thresholdsFromRule(rule: ScoringRule): GrowthRule['thresholds'] {
   return undefined;
 }
 
+function normalizeThresholdUnit(value: number | undefined, unit?: string): number | undefined {
+  if (value === undefined) return undefined;
+  // Scoring profile stores percentages as whole numbers (e.g. 15 => 15%).
+  // Financial analysis metrics are decimals (0.15), so normalize once here.
+  if (unit === 'percent' || unit === '%') return value / 100;
+  return value;
+}
+
+function normalizeThresholds(
+  thresholds: GrowthRule['thresholds'],
+  unit?: string,
+): GrowthRule['thresholds'] {
+  if (!thresholds) return undefined;
+  return {
+    bull: normalizeThresholdUnit(thresholds.bull, unit),
+    neutral: normalizeThresholdUnit(thresholds.neutral, unit),
+    bear: normalizeThresholdUnit(thresholds.bear, unit),
+  };
+}
+
 function inferRuleKind(metricId: string, unit?: string): GrowthRule['kind'] {
   if (metricId.includes('cagr')) return 'cagr';
   if (metricId.includes('growth') || metricId.includes('yoy')) return 'yoy';
@@ -67,7 +87,7 @@ function toGrowthRule(metricId: string, rule: ScoringRule): GrowthRule | null {
   return {
     kind: inferRuleKind(metricId, rule.unit),
     direction: rule.type === 'lower_better' ? 'lowerIsBetter' : 'higherIsBetter',
-    thresholds: thresholdsFromRule(rule),
+    thresholds: normalizeThresholds(thresholdsFromRule(rule), rule.unit),
     unit: rule.unit,
     notes: rule.note,
   };
