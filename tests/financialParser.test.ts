@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseNumber, parseHeader, parseMarkdownTable, parseFinancialMarkdown, findRow, getRowValue } from '../src/financials/parser';
+import { parseNumber, parseHeader, parseMarkdownTable, parseFinancialMarkdown, findRow, findRowByMetricKey, getRowValue } from '../src/financials/parser';
 
 describe('parseNumber', () => {
   it('parses European-format numbers (dot thousands, comma decimal)', () => {
@@ -199,6 +199,20 @@ describe('findRow and getRowValue', () => {
     const row = findRow(section, 'net income');
     expect(row).toBeDefined();
     expect(row!.label).toBe('Net Income to Common Incl Extra Items');
+  });
+
+  it('finds rows by canonical metric key aliases', () => {
+    const section = {
+      name: 'Income Statement',
+      periods: ['P1'],
+      rows: [
+        { label: 'Total Revenues', values: { P1: 500 } },
+        { label: 'Diluted EPS Excl Extra Items', values: { P1: 2.5 } },
+      ],
+    };
+
+    expect(findRowByMetricKey(section, 'revenue')?.label).toBe('Total Revenues');
+    expect(findRowByMetricKey(section, 'epsDiluted')?.label).toContain('Diluted EPS');
   });
 
   it('returns null for missing rows', () => {
