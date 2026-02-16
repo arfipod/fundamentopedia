@@ -15,8 +15,14 @@ describe('metricAliases', () => {
 
   it('matches heuristic labels', () => {
     expect(matchMetricKeyFromLabel('Revenue (USD)')).toBe('revenue');
+    expect(matchMetricKeyFromLabel('Revenue growth YoY')).toBe('revenueGrowthYoy');
     expect(matchMetricKeyFromLabel('Net Income (Loss)')).toBe('netIncome');
     expect(matchMetricKeyFromLabel('CAPEX adjusted')).toBe('capex');
+  });
+
+  it('does not force valuation multiples to non-valuation metrics', () => {
+    expect(matchMetricKeyFromLabel('NTM EV/Revenue')).toBeNull();
+    expect(matchMetricKeyFromLabel('NTM EV/EBITDA')).toBeNull();
   });
 
   it('returns null when no mapping exists', () => {

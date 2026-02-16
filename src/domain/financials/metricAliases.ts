@@ -1,5 +1,6 @@
 export type MetricKey =
   | 'revenue'
+  | 'revenueGrowthYoy'
   | 'cogs'
   | 'grossProfit'
   | 'grossMargin'
@@ -65,6 +66,7 @@ export function normalizeMetricLabel(raw: string): string {
 
 export const METRIC_ALIASES: Record<MetricKey, string[]> = {
   revenue: ['revenue', 'revenues', 'total revenue', 'net sales', 'sales', 'total revenues', 'sales revenue', 'turnover'],
+  revenueGrowthYoy: ['revenue growth yoy', 'revenue yoy', 'revenue_growth_yoy', 'revenue growth'],
   cogs: ['cost of revenue', 'cost of revenues', 'cost of goods sold', 'cogs', 'cost of sales'],
   grossProfit: ['gross profit'],
   grossMargin: ['gross margin', 'gross profit margin'],
@@ -155,14 +157,27 @@ export function matchMetricKeyFromLabel(rawLabel: string): MetricKey | null {
   const label = normalizeMetricLabel(rawLabel);
   if (!label) return null;
 
+  // Avoid forcing valuation multiples into fundamental level metrics.
+  if (
+    label.includes('evrevenue')
+    || label.includes('evebitda')
+    || label.includes('enterprise value to')
+    || label.includes('price to earnings')
+    || label.includes('pe ratio')
+    || label.includes('price to book')
+    || label.includes('ev sales')
+  ) {
+    return null;
+  }
+
   const exactMatch = ALIAS_EXACT_LOOKUP.get(label);
   if (exactMatch) return exactMatch;
 
   const contains = (needle: string) => label.includes(needle);
 
   // Revenue and growth patterns (handle 'revenue_growth_yoy' from GICS IDs)
-  if (contains('revenuegrowth') || contains('revenue growth') || contains('revenue yoy')) return 'revenue';
-  if (contains('revenue')) return 'revenue';
+  if (contains('revenuegrowth') || contains('revenue growth') || contains('revenue yoy') || contains('revenuegrowthyoy')) return 'revenueGrowthYoy';
+  if (label === 'revenue' || label === 'revenues' || label.startsWith('revenue ') || contains('total revenue') || contains('total revenues') || contains('net sales')) return 'revenue';
 
   // Margin patterns (check concatenated versions for underscore-separated IDs)
   if (contains('gross margin') || contains('grossmargin')) return 'grossMargin';

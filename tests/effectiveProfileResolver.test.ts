@@ -16,12 +16,15 @@ describe('resolveEffectiveProfile', () => {
     expect(effective?.ui?.groups?.length).toBeGreaterThan(0);
   });
 
-  it('includes mapped core metrics with rule and commentary fields', () => {
+  it('maps revenue growth thresholds separately from revenue level', () => {
     const effective = resolveEffectiveProfile(profile, '45103010');
-    expect(effective?.metrics.revenue).toBeTruthy();
-    expect(effective?.metrics.revenue.priority).toBe('core');
-    expect(effective?.metrics.revenue.rules?.length).toBeGreaterThan(0);
-    expect(effective?.metrics.revenue.commentary?.title).toBeTruthy();
+
+    expect(effective?.metrics.revenueGrowthYoy).toBeTruthy();
+    expect(effective?.metrics.revenueGrowthYoy.rules?.length).toBeGreaterThan(0);
+
+    if (effective?.metrics.revenue) {
+      expect(effective.metrics.revenue.rules).toBeUndefined();
+    }
   });
 
 
