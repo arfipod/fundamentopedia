@@ -44,7 +44,7 @@ export function FinancialAnalysis({ profile, gicsItems }: Props) {
   );
 
   const effectiveProfile = useMemo(
-    () => (selectedGicsCode ? resolveEffectiveProfile(profile, selectedGicsCode) : null),
+    () => resolveEffectiveProfile(profile, selectedGicsCode ?? 'general'),
     [profile, selectedGicsCode],
   );
 

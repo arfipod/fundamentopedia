@@ -89,16 +89,37 @@ function inferMetricKey(metric: ComputedMetric): MetricKey | null {
   if (byAlias) return byAlias;
 
   const lower = metric.label.toLowerCase();
+
+  // CAGR pattern detection
+  if (lower.includes('cagr')) {
+    if (lower.includes('revenue')) return 'revenueCagr';
+    if (lower.includes('gross profit')) return 'grossProfitCagr';
+    if (lower.includes('eps')) return 'epsCagr';
+    if (lower.includes('fcf') || lower.includes('free cash flow')) return 'fcfCagr';
+  }
+
+  // Growth and YoY patterns
   if (lower.includes('revenue yoy') || lower.includes('revenue growth')) return 'revenue';
+  if (lower.includes('net income yoy') || lower.includes('net income growth')) return 'netIncome';
+
+  // Margin patterns
   if (lower.includes('gross margin')) return 'grossMargin';
   if (lower.includes('operating margin')) return 'operatingMargin';
   if (lower.includes('net margin')) return 'netMargin';
+  if (lower.includes('ebitda margin')) return 'ebitdaMargin';
+  if (lower.includes('ebit margin')) return 'ebitMargin';
+  if (lower.includes('fcf margin') || lower.includes('free cash flow margin')) return 'freeCashFlowMargin';
+
+  // Other metrics
   if (lower.includes('free cash flow') || lower.includes('fcf')) return 'freeCashFlow';
+  if (lower.includes('operating cash flow')) return 'operatingCashFlow';
+  if (lower.includes('capex') || lower.includes('capital expenditure')) return 'capex';
   if (lower.includes('roic')) return 'roic';
   if (lower.includes('roe')) return 'roe';
   if (lower.includes('roa')) return 'roa';
   if (lower.includes('inventory')) return 'inventory';
   if (lower.includes('net debt')) return 'netDebt';
+
   return null;
 }
 
@@ -263,10 +284,17 @@ function MetricRow({
   const latestValue = latestPeriod ? metric.values[latestPeriod] ?? null : null;
   const cagrValue = computeMetricCagr(metric, allPeriods, cagrWindowYears);
 
-  const shouldShowCagr = profileMetric?.supports?.cagr === true
-    || (metricKey !== null && ['revenue', 'freeCashFlow', 'netIncome', 'epsBasic', 'epsDiluted', 'grossProfit'].includes(metricKey));
+  // Don't show CAGR column for metrics that are already CAGR values
+  const isCagrMetric = metricKey !== null && ['revenueCagr', 'grossProfitCagr', 'epsCagr', 'fcfCagr'].includes(metricKey);
+  const shouldShowCagr = !isCagrMetric && (
+    profileMetric?.supports?.cagr === true
+    || (metricKey !== null && ['revenue', 'freeCashFlow', 'netIncome', 'epsBasic', 'epsDiluted', 'grossProfit'].includes(metricKey))
+  );
 
-  const ruleInputValue = relevantRule?.kind === 'cagr' ? cagrValue : latestValue;
+  // For CAGR metrics, use latest value directly; for other metrics with CAGR rules, compute CAGR
+  const ruleInputValue = relevantRule?.kind === 'cagr'
+    ? (isCagrMetric ? latestValue : cagrValue)
+    : latestValue;
   const signal = relevantRule ? evaluateRule(relevantRule, ruleInputValue) : 'na';
 
   return (

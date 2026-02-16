@@ -138,10 +138,10 @@ export const METRIC_ALIASES: Record<MetricKey, string[]> = {
   roe: ['roe', 'return on equity'],
   roa: ['roa', 'return on assets'],
 
-  grossProfitCagr: [],
-  revenueCagr: [],
-  epsCagr: [],
-  fcfCagr: [],
+  grossProfitCagr: ['gross profit cagr', 'gross profit 3y cagr', 'gross profit 5y cagr', 'gross profit 10y cagr'],
+  revenueCagr: ['revenue cagr', 'revenue 3y cagr', 'revenue 5y cagr', 'revenue 10y cagr', 'revenue cagr 3y', 'revenue cagr 5y', 'revenue cagr 10y'],
+  epsCagr: ['eps cagr', 'eps 3y cagr', 'eps 5y cagr', 'eps 10y cagr', 'eps cagr 3y', 'eps cagr 5y', 'eps cagr 10y'],
+  fcfCagr: ['fcf cagr', 'fcf 3y cagr', 'fcf 5y cagr', 'fcf 10y cagr', 'free cash flow cagr', 'free cash flow 3y cagr', 'free cash flow 5y cagr', 'free cash flow 10y cagr'],
 };
 
 const ALIAS_EXACT_LOOKUP = new Map<string, MetricKey>();
@@ -160,22 +160,59 @@ export function matchMetricKeyFromLabel(rawLabel: string): MetricKey | null {
 
   const contains = (needle: string) => label.includes(needle);
 
-  if (contains('revenue') || contains('net sales')) return 'revenue';
-  if (contains('free cash flow') || label === 'fcf') return 'freeCashFlow';
-  if (contains('operating cash flow')) return 'operatingCashFlow';
-  if (contains('gross profit')) return 'grossProfit';
-  if (contains('operating income') || contains('income from operations')) return 'operatingIncome';
+  // Revenue and growth patterns (handle 'revenue_growth_yoy' from GICS IDs)
+  if (contains('revenuegrowth') || contains('revenue growth') || contains('revenue yoy')) return 'revenue';
+  if (contains('revenue')) return 'revenue';
+
+  // Margin patterns (check concatenated versions for underscore-separated IDs)
+  if (contains('gross margin') || contains('grossmargin')) return 'grossMargin';
+  if (contains('operating margin') || contains('operatingmargin')) return 'operatingMargin';
+  if (contains('net margin') || contains('netmargin')) return 'netMargin';
+  if (contains('ebitda margin') || contains('ebitdamargin')) return 'ebitdaMargin';
+  if (contains('ebit margin') || contains('ebitmargin')) return 'ebitMargin';
+  if (contains('fcf margin') || contains('fcfmargin') || contains('freecashflowmargin')) return 'freeCashFlowMargin';
+
+  // Cash flow patterns
+  if (contains('free cash flow') || contains('freecashflow') || label === 'fcf') return 'freeCashFlow';
+  if (contains('operating cash flow') || contains('operatingcashflow') || contains('cashflowfromoperations')) return 'operatingCashFlow';
+
+  // Profit and income patterns
+  if (contains('gross profit') || contains('grossprofit')) return 'grossProfit';
+  if (contains('operating income') || contains('income from operations') || contains('operatingincome')) return 'operatingIncome';
   if (contains('ebitda')) return 'ebitda';
   if (contains('ebit')) return 'ebit';
-  if (contains('net income') || contains('net earnings')) return 'netIncome';
-  if (contains('eps diluted')) return 'epsDiluted';
-  if (contains('eps basic')) return 'epsBasic';
-  if (contains('capital expenditures') || contains('capex')) return 'capex';
-  if (contains('total assets')) return 'totalAssets';
-  if (contains('total liabilities')) return 'totalLiabilities';
-  if (contains('total equity') || contains('shareholders equity') || contains('stockholders equity')) return 'totalEquity';
-  if (contains('total debt')) return 'totalDebt';
-  if (contains('net debt')) return 'netDebt';
+  if (contains('net income') || contains('net earnings') || contains('netincome')) return 'netIncome';
+
+  // EPS patterns
+  if (contains('eps diluted') || contains('epsdiluted')) return 'epsDiluted';
+  if (contains('eps basic') || contains('epsbasic')) return 'epsBasic';
+
+  // Expense patterns (handle r_and_d_pct_revenue, sga_pct_revenue from GICS IDs)
+  if (contains('r and d') || contains('randd') || contains('rd expense') || contains('rdexpense')) return 'rdExpense';
+  if (contains('sg and a') || contains('sga') || contains('sgaexpense')) return 'sgaExpense';
+
+  // Return ratios
+  if (contains('roic')) return 'roic';
+  if (contains('roe')) return 'roe';
+  if (contains('roa')) return 'roa';
+
+  // Balance sheet and other patterns
+  if (contains('capital expenditures') || contains('capex') || contains('capitalexpenditures')) return 'capex';
+  if (contains('working capital') || contains('workingcapital')) return 'workingCapital';
+  if (contains('cash and equivalents') || contains('cashandequivalents')) return 'cashAndEquivalents';
+  if (contains('total assets') || contains('totalassets')) return 'totalAssets';
+  if (contains('total liabilities') || contains('totalliabilities')) return 'totalLiabilities';
+  if (contains('total equity') || contains('shareholders equity') || contains('stockholders equity') || contains('totalequity')) return 'totalEquity';
+  if (contains('total debt') || contains('totaldebt')) return 'totalDebt';
+  if (contains('net debt') || contains('netdebt')) return 'netDebt';
+
+  // CAGR pattern detection
+  if (contains('cagr')) {
+    if (contains('revenue')) return 'revenueCagr';
+    if (contains('gross profit')) return 'grossProfitCagr';
+    if (contains('eps')) return 'epsCagr';
+    if (contains('fcf') || contains('free cash flow')) return 'fcfCagr';
+  }
 
   return null;
 }

@@ -1,5 +1,5 @@
 import type { MetricCategory, ProfileRoot, ScoringRule } from '../../types';
-import { resolveGicsProfile } from '../../data/profileResolver';
+import { resolveGeneralProfile, resolveGicsProfile } from '../../data/profileResolver';
 import { matchMetricKeyFromLabel, type MetricKey } from '../financials/metricAliases';
 import type { EffectiveMetricProfile, EffectiveProfile, GrowthRule } from './effectiveProfileTypes';
 
@@ -130,7 +130,10 @@ function buildOverrides(path: string[], metricIdByKey: Map<MetricKey, string>, p
 }
 
 export function resolveEffectiveProfile(profile: ProfileRoot, code: string): EffectiveProfile | null {
-  const resolved = resolveGicsProfile(profile, code, { recomputeFromGraph: true });
+  // Handle 'general' code specially
+  const resolved = code === 'general'
+    ? resolveGeneralProfile(profile)
+    : resolveGicsProfile(profile, code, { recomputeFromGraph: true });
   if (!resolved) return null;
 
   const lineage = buildLineage(profile, resolved.path);
