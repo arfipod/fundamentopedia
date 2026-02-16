@@ -6,9 +6,12 @@ import { Navbar } from './ui/Navbar';
 import { SearchBox } from './ui/SearchBox';
 import { TreeNav } from './ui/TreeNav';
 import { NodeDetail } from './ui/NodeDetail';
+import { FinancialAnalysis } from './ui/FinancialAnalysis';
 import { resolveGeneralProfile, resolveGicsProfile } from './data/profileResolver';
 import { useI18n } from './i18n/i18n';
 import { migrateAndResolveGicsCode } from './data/gicsCodeMigration';
+
+export type AppView = 'encyclopedia' | 'financials';
 
 const SELECTED_GICS_STORAGE_KEY = 'fundamentopedia.selectedGicsCode';
 
@@ -46,6 +49,10 @@ export default function App() {
   const [isPortrait, setIsPortrait] = useState(false);
   const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
   const [selectionHydrated, setSelectionHydrated] = useState(false);
+  const [activeView, setActiveView] = useState<AppView>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('view') === 'financials' ? 'financials' : 'encyclopedia';
+  });
 
   useEffect(() => {
     const run = async () => {
@@ -126,64 +133,76 @@ export default function App() {
         onGranularityChange={setGranularity}
         searchText={searchText}
         onSearchTextChange={setSearchText}
+        activeView={activeView}
+        onViewChange={(v) => {
+          setActiveView(v);
+          const url = new URL(window.location.href);
+          if (v === 'financials') url.searchParams.set('view', 'financials');
+          else url.searchParams.delete('view');
+          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+        }}
       />
       <div className="container-fluid py-3">
-        <div className="row">
-          <div className="col-lg-3 position-relative">
-            <SearchBox
-              query={searchText}
-              items={indexes.searchItems}
-              onSelect={(code) => {
-                setSelectedCode(code);
-                setSearchText('');
-                setIsTreeCollapsed(false);
-              }}
-            />
-            <div className="mb-2 d-grid">
-              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedCode(null)}>
-                {lang === 'es' ? 'Ver métricas generales (sin GICS)' : 'View general metrics (no GICS)'}
-              </button>
-            </div>
-            {isPortrait ? (
+        {activeView === 'financials' ? (
+          <FinancialAnalysis />
+        ) : (
+          <div className="row">
+            <div className="col-lg-3 position-relative">
+              <SearchBox
+                query={searchText}
+                items={indexes.searchItems}
+                onSelect={(code) => {
+                  setSelectedCode(code);
+                  setSearchText('');
+                  setIsTreeCollapsed(false);
+                }}
+              />
               <div className="mb-2 d-grid">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={() => setIsTreeCollapsed((prev) => !prev)}
-                  aria-expanded={!isTreeCollapsed}
-                >
-                  {isTreeCollapsed
-                    ? (lang === 'es' ? 'Mostrar árbol de industrias' : 'Show industry tree')
-                    : (lang === 'es' ? 'Ocultar árbol de industrias' : 'Hide industry tree')}
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedCode(null)}>
+                  {lang === 'es' ? 'Ver métricas generales (sin GICS)' : 'View general metrics (no GICS)'}
                 </button>
               </div>
-            ) : null}
-            {!isTreeCollapsed ? (
-              <div className="border rounded p-2" style={{ maxHeight: '80vh', overflow: 'auto' }}>
-                <TreeNav tree={profile.gics_tree} selectedCode={selectedCode} granularity={granularity} onSelect={setSelectedCode} />
-              </div>
-            ) : null}
+              {isPortrait ? (
+                <div className="mb-2 d-grid">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => setIsTreeCollapsed((prev) => !prev)}
+                    aria-expanded={!isTreeCollapsed}
+                  >
+                    {isTreeCollapsed
+                      ? (lang === 'es' ? 'Mostrar árbol de industrias' : 'Show industry tree')
+                      : (lang === 'es' ? 'Ocultar árbol de industrias' : 'Hide industry tree')}
+                  </button>
+                </div>
+              ) : null}
+              {!isTreeCollapsed ? (
+                <div className="border rounded p-2" style={{ maxHeight: '80vh', overflow: 'auto' }}>
+                  <TreeNav tree={profile.gics_tree} selectedCode={selectedCode} granularity={granularity} onSelect={setSelectedCode} />
+                </div>
+              ) : null}
+            </div>
+            <div className="col-lg-9">
+              {selectedCode && selectedNode ? (
+                <NodeDetail
+                  code={selectedCode}
+                  node={selectedNode}
+                  profile={profile}
+                  breadcrumbCodes={selectedNode.path}
+                />
+              ) : generalNode ? (
+                <NodeDetail
+                  code="general"
+                  node={generalNode}
+                  profile={profile}
+                  breadcrumbCodes={[]}
+                />
+              ) : (
+                <div className="alert alert-info">Select a node from the tree.</div>
+              )}
+            </div>
           </div>
-          <div className="col-lg-9">
-            {selectedCode && selectedNode ? (
-              <NodeDetail
-                code={selectedCode}
-                node={selectedNode}
-                profile={profile}
-                breadcrumbCodes={selectedNode.path}
-              />
-            ) : generalNode ? (
-              <NodeDetail
-                code="general"
-                node={generalNode}
-                profile={profile}
-                breadcrumbCodes={[]}
-              />
-            ) : (
-              <div className="alert alert-info">Select a node from the tree.</div>
-            )}
-          </div>
-        </div>
+        )}
       </div>
       <footer className="text-center text-muted small pb-3">Made with 💙 by arrf</footer>
     </div>
