@@ -10,7 +10,9 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "test:vitest": "bash ./scripts/run-vitest.sh",
-    "test:vitest:coverage": "bash ./scripts/run-vitest.sh run --coverage"
+    "test:vitest:coverage": "bash ./scripts/run-vitest.sh run --coverage",
+    "validate:gics": "npx tsx src/tools/validateGicsProfile.ts",
+    "validate:gics:fix": "npx tsx src/tools/validateGicsProfile.ts --fix"
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
