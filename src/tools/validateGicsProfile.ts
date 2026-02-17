@@ -456,7 +456,7 @@ function validateTemplates(data: ProfileRoot, doFix: boolean): void {
         report("WARNING", "template_duplicate", `${loc}.${cat}`,
           `Duplicate metric(s): ${[...new Set(dupes)].join(", ")}`);
         if (doFix) {
-          (tmpl as Record<string, unknown>)[cat] = dedupe(list);
+          (tmpl as unknown as Record<string, unknown>)[cat] = dedupe(list);
           fixes.push({
             location: `${loc}.${cat}`,
             description: `Deduplicated: removed ${dupes.length} duplicate(s).`,
