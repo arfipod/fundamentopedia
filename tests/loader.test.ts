@@ -13,7 +13,7 @@ describe('loader', () => {
     expect(fetch).toHaveBeenCalledWith('/gics_watchlist_scorecard_profile_en.json');
   });
 
-  it('falls back to legacy profile endpoint', async () => {
+  it('falls back to secondary profile endpoint', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({ ok: false, status: 404 })

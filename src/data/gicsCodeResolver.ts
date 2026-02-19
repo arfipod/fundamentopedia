@@ -1,4 +1,4 @@
-const LEGACY_GICS_CODE_MAP: Record<string, string> = {
+const GICS_CODE_ALIASES: Record<string, string> = {
   '45102020': '20202030',
   '20304020': '20304030',
   '255020': '255030',
@@ -6,16 +6,16 @@ const LEGACY_GICS_CODE_MAP: Record<string, string> = {
   '601020': '602010',
 };
 
-function mapLegacy601020SubIndustry(code: string): string {
+function normalizeSubIndustryAlias(code: string): string {
   if (/^6010201\d$/.test(code)) {
     return `6020101${code.slice(-1)}`;
   }
   return code;
 }
 
-function migrateLegacyGicsCode(code: string): string {
-  const mapped = LEGACY_GICS_CODE_MAP[code] ?? code;
-  return mapLegacy601020SubIndustry(mapped);
+function normalizeGicsCode(code: string): string {
+  const aliasedCode = GICS_CODE_ALIASES[code] ?? code;
+  return normalizeSubIndustryAlias(aliasedCode);
 }
 
 export function closestKnownGicsCode(code: string, knownCodes: Set<string>): string | null {
@@ -26,11 +26,11 @@ export function closestKnownGicsCode(code: string, knownCodes: Set<string>): str
     candidate = candidate.slice(0, -2);
     if (knownCodes.has(candidate)) return candidate;
   }
+
   return knownCodes.has(candidate) ? candidate : null;
 }
 
-export function migrateAndResolveGicsCode(code: string, knownCodes: Set<string>): string | null {
-  const migrated = migrateLegacyGicsCode(code);
-  return closestKnownGicsCode(migrated, knownCodes);
+export function resolveGicsCode(code: string, knownCodes: Set<string>): string | null {
+  const normalizedCode = normalizeGicsCode(code);
+  return closestKnownGicsCode(normalizedCode, knownCodes);
 }
-

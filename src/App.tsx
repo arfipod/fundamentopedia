@@ -9,7 +9,7 @@ import { NodeDetail } from './ui/NodeDetail';
 import { FinancialAnalysis } from './ui/FinancialAnalysis';
 import { resolveGeneralProfile, resolveGicsProfile } from './data/profileResolver';
 import { useI18n } from './i18n/i18n';
-import { migrateAndResolveGicsCode } from './data/gicsCodeMigration';
+import { resolveGicsCode } from './data/gicsCodeResolver';
 
 export type AppView = 'encyclopedia' | 'financials';
 
@@ -86,7 +86,7 @@ export default function App() {
       return;
     }
 
-    const resolved = migrateAndResolveGicsCode(persistedCode, knownCodes);
+    const resolved = resolveGicsCode(persistedCode, knownCodes);
     if (resolved) {
       setSelectedCode(resolved);
       persistSelectedCode(resolved);
