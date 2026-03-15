@@ -84,6 +84,28 @@ function signalBadgeClass(signal: Signal): string {
   return 'text-bg-secondary';
 }
 
+function buildMetricSeries(metric: ComputedMetric, periods: string[]): Array<{ period: string; value: number }> {
+  return periods
+    .map((period) => ({ period, value: metric.values[period] }))
+    .filter((point): point is { period: string; value: number } => Number.isFinite(point.value));
+}
+
+function buildSparklinePath(values: number[], width: number, height: number): string {
+  if (values.length < 2) return '';
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+
+  return values
+    .map((value, idx) => {
+      const x = (idx / (values.length - 1)) * width;
+      const y = height - ((value - min) / range) * height;
+      return `${idx === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(' ');
+}
+
 function inferMetricKey(metric: ComputedMetric): MetricKey | null {
   const byAlias = matchMetricKeyFromLabel(metric.label);
   if (byAlias) return byAlias;
@@ -297,6 +319,9 @@ function MetricRow({
   const latestPeriod = periods[periods.length - 1];
   const latestValue = latestPeriod ? metric.values[latestPeriod] ?? null : null;
   const cagrValue = computeMetricCagr(metric, allPeriods, cagrWindowYears);
+  const chartSeries = buildMetricSeries(metric, allPeriods);
+  const canShowChart = chartSeries.length >= 2;
+  const sparklinePath = canShowChart ? buildSparklinePath(chartSeries.map((point) => point.value), 260, 70) : '';
 
   // Don't show CAGR column for metrics that are already CAGR values
   const isCagrMetric = metricKey !== null && ['revenueCagr', 'grossProfitCagr', 'epsCagr', 'fcfCagr'].includes(metricKey);
@@ -324,6 +349,21 @@ function MetricRow({
             <div className="text-muted">• No GICS quality criteria mapped for this metric.</div>
           )}
         </div>
+        {canShowChart ? (
+          <details className="mt-2">
+            <summary className="small fw-semibold" style={{ cursor: 'pointer' }}>View chart</summary>
+            <div className="border rounded p-2 mt-1 bg-light-subtle">
+              <svg viewBox="0 0 260 70" width="100%" height="70" role="img" aria-label={`Trend chart for ${metric.label}`}>
+                <line x1="0" y1="69.5" x2="260" y2="69.5" stroke="#dee2e6" strokeWidth="1" />
+                <path d={sparklinePath} fill="none" stroke="#0d6efd" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+              </svg>
+              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '0.72rem' }}>
+                <span>{formatPeriodLabel(chartSeries[0].period)} · {fmtNum(chartSeries[0].value, metric.unit)}</span>
+                <span>{formatPeriodLabel(chartSeries[chartSeries.length - 1].period)} · {fmtNum(chartSeries[chartSeries.length - 1].value, metric.unit)}</span>
+              </div>
+            </div>
+          </details>
+        ) : null}
       </td>
       {periods.map((p) => {
         const v = metric.values[p];
